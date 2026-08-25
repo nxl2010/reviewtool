@@ -24,6 +24,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const productIdInput = document.getElementById('productIdInput');
   const realProductId = document.getElementById('real_comment_post_ID');
 
+  const templateSelect = document.getElementById('templateSelect');
+  const btnChooseTemplate1 = document.getElementById('btnChooseTemplate1');
+  const btnChooseTemplate2 = document.getElementById('btnChooseTemplate2');
+
   const tabBtns = document.querySelectorAll('.tab-btn');
   const tabContents = document.querySelectorAll('.tab-content');
 
@@ -31,6 +35,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const commentInput = document.getElementById('commentInput');
   const charCount = document.getElementById('charCount');
   const btnSubmitSingle = document.getElementById('btnSubmitSingle');
+
+  const phoneInput = document.getElementById('phoneInput');
+  const emailInput = document.getElementById('emailInput');
 
   const batchTableBody = document.getElementById('batchTableBody');
   const btnAddRow = document.getElementById('btnAddRow');
@@ -48,7 +55,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   let staffList = staffListDefault;
   let isBatchRunning = false;
 
+  // Set default phone & email as requested
+  if (phoneInput && !phoneInput.value) phoneInput.value = '0334333777';
+  if (emailInput && !emailInput.value) emailInput.value = 'kuchenvietnam@gmail.com';
+
   function log(msg, type = 'info') {
+    if (!logTerminal) return;
     const time = new Date().toLocaleTimeString();
     const line = document.createElement('div');
     line.className = `log-line ${type}`;
@@ -98,8 +110,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       comment_parent: '0',
       submit: 'Gửi đánh giá ngay',
       author: payload.author,
-      phone: payload.phone,
-      email: payload.email || '',
+      phone: payload.phone || '0334333777',
+      email: payload.email || 'kuchenvietnam@gmail.com',
       rating: payload.rating || '5',
       comment: payload.comment
     };
@@ -153,7 +165,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return { success: true, status: 200, message: 'Đã phát request trực tiếp từ trình duyệt tới Kuchen.vn', via: 'Direct Iframe' };
   }
 
-  btnClearLog.addEventListener('click', () => { logTerminal.innerHTML = ''; });
+  if (btnClearLog) {
+    btnClearLog.addEventListener('click', () => { if (logTerminal) logTerminal.innerHTML = ''; });
+  }
 
   // Load datasets
   try {
@@ -218,6 +232,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Update Template Options when a product is selected
+  function updateTemplateOptions(foundProduct) {
+    templateSelect.innerHTML = '';
+    
+    if (!foundProduct || (!foundProduct.template1 && !foundProduct.template2)) {
+      templateSelect.innerHTML = '<option value="">-- Sản phẩm này chưa có mẫu câu --</option>';
+      return;
+    }
+
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = '-- Chọn mẫu câu nhận xét gợi ý cho sản phẩm này --';
+    templateSelect.appendChild(defaultOpt);
+
+    if (foundProduct.template1) {
+      const opt1 = document.createElement('option');
+      opt1.value = foundProduct.template1;
+      opt1.textContent = `📝 Mẫu 1: "${foundProduct.template1.substring(0, 60)}..."`;
+      templateSelect.appendChild(opt1);
+    }
+
+    if (foundProduct.template2) {
+      const opt2 = document.createElement('option');
+      opt2.value = foundProduct.template2;
+      opt2.textContent = `📝 Mẫu 2: "${foundProduct.template2.substring(0, 60)}..."`;
+      templateSelect.appendChild(opt2);
+    }
+  }
+
   // Handle product select change
   excelProductSelect.addEventListener('change', () => {
     const selectedUrl = excelProductSelect.value;
@@ -229,13 +272,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         productIdInput.value = targetId;
         realProductId.value = targetId;
         log(`[Sản Phẩm] Đã chọn: "${found.name}" (Real Product ID: ${targetId})`, 'info');
+
+        // Update Template Select Box for this product
+        updateTemplateOptions(found);
       }
     } else {
       productUrlInput.value = '';
       productIdInput.value = '';
       realProductId.value = '';
+      updateTemplateOptions(null);
     }
   });
+
+  // Handle Template Select Change
+  templateSelect.addEventListener('change', () => {
+    const selectedText = templateSelect.value;
+    if (selectedText) {
+      commentInput.value = selectedText;
+      updateCharCount();
+    }
+  });
+
+  // Template Quick Buttons
+  btnChooseTemplate1.addEventListener('click', () => {
+    const selectedUrl = excelProductSelect.value;
+    const found = allProducts.find(p => p.url === selectedUrl);
+    if (found && found.template1) {
+      commentInput.value = found.template1;
+      templateSelect.value = found.template1;
+      updateCharCount();
+    } else {
+      alert('Vui lòng chọn sản phẩm trước hoặc sản phẩm này chưa có Mẫu 1!');
+    }
+  });
+
+  btnChooseTemplate2.addEventListener('click', () => {
+    const selectedUrl = excelProductSelect.value;
+    const found = allProducts.find(p => p.url === selectedUrl);
+    if (found && found.template2) {
+      commentInput.value = found.template2;
+      templateSelect.value = found.template2;
+      updateCharCount();
+    } else {
+      alert('Vui lòng chọn sản phẩm trước hoặc sản phẩm này chưa có Mẫu 2!');
+    }
+  });
+
+  function updateCharCount() {
+    const len = commentInput.value.length;
+    charCount.textContent = `${len} ký tự ${len >= 10 ? '(Hợp lệ)' : '(Tối thiểu 10)'}`;
+    charCount.style.color = len >= 10 ? '#34d399' : '#f87171';
+  }
 
   // Sync Product ID
   productIdInput.addEventListener('input', () => {
@@ -253,11 +340,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // Char Counter
-  commentInput.addEventListener('input', () => {
-    const len = commentInput.value.length;
-    charCount.textContent = `${len} ký tự ${len >= 10 ? '(Hợp lệ)' : '(Tối thiểu 10)'}`;
-    charCount.style.color = len >= 10 ? '#34d399' : '#f87171';
-  });
+  commentInput.addEventListener('input', updateCharCount);
 
   // Single Submission Handler with Server Error Reporting & Global Cloud Sync
   realForm.addEventListener('submit', async (e) => {
@@ -266,15 +349,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     realProductId.value = productIdInput.value.trim();
     const pid = realProductId.value;
     const author = document.getElementById('authorInput').value.trim();
-    const phone = document.getElementById('phoneInput').value.trim();
-    const email = document.getElementById('emailInput').value.trim();
+    const phone = phoneInput.value.trim() || '0334333777';
+    const email = emailInput.value.trim() || 'kuchenvietnam@gmail.com';
     const comment = commentInput.value.trim();
     const ratingEl = document.querySelector('input[name="rating"]:checked');
     const rating = ratingEl ? ratingEl.value : '5';
 
     if (!pid) {
-      alert('Vui lòng chọn sản phẩm hoặc nhập Product ID!');
-      log('Vui lòng chọn sản phẩm hoặc nhập Product ID!', 'warning');
+      alert('Vui lòng chọn sản phẩm!');
+      log('Vui lòng chọn sản phẩm!', 'warning');
       return;
     }
 
@@ -325,7 +408,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     tr.innerHTML = `
       <td class="row-idx">${batchTableBody.children.length + 1}</td>
       <td><input type="text" class="b-author" value="${data.author || ''}" placeholder="Họ tên"></td>
-      <td><input type="text" class="b-phone" value="${data.phone || ''}" placeholder="SĐT"></td>
+      <td><input type="text" class="b-phone" value="${data.phone || '0334333777'}" placeholder="SĐT"></td>
       <td>
         <select class="b-rating">
           <option value="5" ${data.rating == 5 ? 'selected' : ''}>5 ★</option>
@@ -360,12 +443,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const items = [];
     for (let r of rows) {
       const author = r.querySelector('.b-author').value.trim();
-      const phone = r.querySelector('.b-phone').value.trim();
+      const phone = r.querySelector('.b-phone').value.trim() || '0334333777';
       const rating = r.querySelector('.b-rating').value;
       const comment = r.querySelector('.b-comment').value.trim();
-      if (!author || !phone || !comment) {
-        log('Vui lòng điền đủ Họ tên, SĐT và Nội dung cho tất cả các hàng!', 'warning');
-        alert('Vui lòng điền đủ Họ tên, SĐT và Nội dung cho tất cả các hàng!');
+      if (!author || !comment) {
+        log('Vui lòng điền đủ Họ tên và Nội dung cho tất cả các hàng!', 'warning');
+        alert('Vui lòng điền đủ Họ tên và Nội dung cho tất cả các hàng!');
         return;
       }
       items.push({ author, phone, rating, comment });
@@ -373,8 +456,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const pid = productIdInput.value.trim();
     if (!pid) {
-      alert('Vui lòng chọn sản phẩm hoặc nhập Product ID!');
-      log('Vui lòng chọn sản phẩm hoặc nhập Product ID!', 'warning');
+      alert('Vui lòng chọn sản phẩm!');
+      log('Vui lòng chọn sản phẩm!', 'warning');
       return;
     }
 
@@ -386,8 +469,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnStopBatch.style.display = 'inline-flex';
     progressSection.style.display = 'block';
 
-    const minD = parseInt(document.getElementById('minDelayInput').value) || 3;
-    const maxD = parseInt(document.getElementById('maxDelayInput').value) || 7;
+    const minD = 3;
+    const maxD = 7;
 
     log(`[Batch] 🚀 Bắt đầu gửi ${items.length} đánh giá kèm kiểm tra phản hồi từ Kuchen.vn...`, 'info');
 
@@ -401,6 +484,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         pid: pid,
         author: item.author,
         phone: item.phone,
+        email: 'kuchenvietnam@gmail.com',
         comment: item.comment,
         rating: item.rating,
         productUrl: selectedUrl

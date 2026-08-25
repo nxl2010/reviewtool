@@ -245,6 +245,39 @@
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
 
+    .template-box {
+      background: rgba(217, 119, 6, 0.05);
+      border: 1px solid rgba(217, 119, 6, 0.2);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .template-btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-template {
+      padding: 6px 12px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-template:hover {
+      background: #f1f5f9;
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
     .tabs-nav { display: flex; gap: 8px; }
 
     .tab-btn {
@@ -511,13 +544,13 @@
               </div>
 
               <div class="form-group">
-                <label for="phoneInput"><i class="fa-solid fa-phone"></i> Số Điện Thoại <span class="req">*</span></label>
-                <input type="tel" id="phoneInput" name="phone" required placeholder="Nhập số điện thoại..." value="">
+                <label for="phoneInput"><i class="fa-solid fa-phone"></i> Số Điện Thoại <span class="req">* (Mặc định: 0334333777)</span></label>
+                <input type="tel" id="phoneInput" name="phone" required placeholder="Nhập số điện thoại..." value="0334333777">
               </div>
 
               <div class="form-group">
-                <label for="emailInput"><i class="fa-solid fa-envelope"></i> Email (Không bắt buộc)</label>
-                <input type="email" id="emailInput" name="email" placeholder="Nhập địa chỉ email (nếu có)..." value="">
+                <label for="emailInput"><i class="fa-solid fa-envelope"></i> Email Chung</label>
+                <input type="email" id="emailInput" name="email" placeholder="Nhập địa chỉ email..." value="kuchenvietnam@gmail.com">
               </div>
 
               <div class="form-group">
@@ -532,9 +565,21 @@
               </div>
             </div>
 
-            <div class="form-group full-width" style="margin-top: 14px;">
+            <!-- Template Comment Selection Box -->
+            <div class="template-box" style="margin-top: 14px;">
+              <label for="templateSelect"><i class="fa-solid fa-wand-magic-sparkles"></i> Chọn Mẫu Câu Đánh Giá Có Sẵn Cho Sản Phẩm Này:</label>
+              <select id="templateSelect" style="margin-top: 6px;">
+                <option value="">-- Bấm chọn mẫu câu có sẵn cho sản phẩm này --</option>
+              </select>
+              <div class="template-btns">
+                <button type="button" class="btn-template" id="btnChooseTemplate1"><i class="fa-solid fa-comment-dots"></i> Chọn Mẫu 1</button>
+                <button type="button" class="btn-template" id="btnChooseTemplate2"><i class="fa-solid fa-comment-dots"></i> Chọn Mẫu 2</button>
+              </div>
+            </div>
+
+            <div class="form-group full-width" style="margin-top: 10px;">
               <label for="commentInput"><i class="fa-solid fa-comment-dots"></i> Nội Dung Đánh Giá <span class="req">* (Tối thiểu 10 ký tự)</span></label>
-              <textarea id="commentInput" name="comment" rows="4" required placeholder="Mời bạn nhập nhận xét chi tiết về sản phẩm..."></textarea>
+              <textarea id="commentInput" name="comment" rows="4" required placeholder="Nội dung sẽ tự động điền khi chọn mẫu câu trên hoặc nhập tự do..."></textarea>
               <div class="char-count" id="charCount">0 ký tự (Tối thiểu 10)</div>
             </div>
 

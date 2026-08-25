@@ -122,10 +122,37 @@
       align-items: center;
       gap: 10px;
       width: 100%;
+      flex-wrap: wrap;
     }
 
     @media (min-width: 640px) {
       .header-actions { width: auto; }
+    }
+
+    .global-auto-template-btn {
+      flex: 1;
+      background: rgba(217, 119, 6, 0.1);
+      border: 1.5px solid rgba(217, 119, 6, 0.4);
+      color: var(--accent-gold);
+      padding: 10px 14px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 44px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .global-auto-template-btn.active-on {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #ffffff;
+      border-color: #d97706;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
     }
 
     .dashboard-link-btn {
@@ -557,6 +584,9 @@
         </div>
         
         <div class="header-actions">
+          <button id="btnGlobalAutoTemplate" class="global-auto-template-btn">
+            <i class="fa-solid fa-lightbulb"></i> 💡 Tự Điền Mẫu 1: TẮT
+          </button>
           <a href="dashboard.html" class="dashboard-link-btn">
             <i class="fa-solid fa-chart-pie"></i> Bảng Trạng Thái
           </a>
@@ -583,10 +613,10 @@
 
         <!-- Department Switcher Buttons -->
         <div class="dept-switch-container">
-          <button type="button" class="dept-btn active" id="btnDeptCSKH">
+          <button type="button" class="dept-btn" id="btnDeptCSKH">
             <i class="fa-solid fa-headset"></i> Bộ Phận CSKH (7 người)
           </button>
-          <button type="button" class="dept-btn" id="btnDeptKyThuat">
+          <button type="button" class="dept-btn active" id="btnDeptKyThuat">
             <i class="fa-solid fa-wrench"></i> Bộ Phận Kỹ Thuật (13 người)
           </button>
         </div>

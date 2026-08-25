@@ -34,6 +34,7 @@ const sampleReviewerNames = [
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const btnGlobalAutoTemplate = document.getElementById('btnGlobalAutoTemplate');
   const btnDeptCSKH = document.getElementById('btnDeptCSKH');
   const btnDeptKyThuat = document.getElementById('btnDeptKyThuat');
 
@@ -83,9 +84,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const logTerminal = document.getElementById('logTerminal');
   const btnClearLog = document.getElementById('btnClearLog');
 
-  let currentDept = localStorage.getItem('kuchen_selected_dept') || 'cskh';
+  // Default department: Kỹ Thuật (13 người)
+  let currentDept = localStorage.getItem('kuchen_selected_dept') || 'kythuat';
+  let isAutoFillOn = false;
   let allProducts = [];
-  let staffList = staffCSKHDefault;
+  let staffList = staffKyThuatDefault;
   let isBatchRunning = false;
   let isAutoPilotRunning = false;
 
@@ -113,6 +116,64 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnDeptCSKH.classList.remove('active');
       }
     }
+  }
+
+  function updateGlobalAutoTemplateUI() {
+    if (!btnGlobalAutoTemplate) return;
+    if (isAutoFillOn) {
+      btnGlobalAutoTemplate.classList.add('active-on');
+      btnGlobalAutoTemplate.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> 💡 Tự Điền Mẫu 1: BẬT';
+    } else {
+      btnGlobalAutoTemplate.classList.remove('active-on');
+      btnGlobalAutoTemplate.innerHTML = '<i class="fa-solid fa-lightbulb"></i> 💡 Tự Điền Mẫu 1: TẮT';
+    }
+  }
+
+  async function fetchGlobalConfig() {
+    try {
+      const res = await fetch('/api/get-config');
+      if (res.ok) {
+        const json = await res.json();
+        if (typeof json.autoFillTemplate1 === 'boolean') {
+          isAutoFillOn = json.autoFillTemplate1;
+          updateGlobalAutoTemplateUI();
+        }
+      }
+    } catch (e) {}
+  }
+
+  // Admin button handler to toggle auto fill template 1 for the ENTIRE system
+  if (btnGlobalAutoTemplate) {
+    btnGlobalAutoTemplate.addEventListener('click', async () => {
+      const pass = prompt('🔐 VUI LÒNG NHẬP MẬT KHẨU ADMIN ĐỂ BẬT/TẮT TỰ ĐIỀN MẪU 1 TOÀN HỆ THỐNG:');
+      if (pass === null) return; // User cancelled
+
+      if (pass !== 'nxl2010@') {
+        alert('❌ Mật khẩu Admin không chính xác! Không thể thay đổi cấu hình hệ thống.');
+        return;
+      }
+
+      const targetState = !isAutoFillOn;
+
+      try {
+        const res = await fetch('/api/toggle-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: 'nxl2010@', autoFillTemplate1: targetState })
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.config) {
+            isAutoFillOn = json.config.autoFillTemplate1;
+            updateGlobalAutoTemplateUI();
+            alert(`🎉 ĐÃ ${isAutoFillOn ? 'BẬT' : 'TẮT'} CHẾ ĐỘ TỰ ĐIỀN MẪU 1 THÀNH CÔNG CHO TOÀN HỆ THỐNG!`);
+            log(`[System Config] Admin đã ${isAutoFillOn ? 'BẬT' : 'TẮT'} Tự Điền Mẫu 1 Toàn Hệ Thống.`, 'success');
+          }
+        }
+      } catch (e) {
+        alert('❌ Lỗi kết nối tới Server!');
+      }
+    });
   }
 
   async function loadDepartmentData(dept) {
@@ -236,7 +297,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnClearLog.addEventListener('click', () => { if (logTerminal) logTerminal.innerHTML = ''; });
   }
 
+  await fetchGlobalConfig();
   await loadDepartmentData(currentDept);
+
+  // Poll system config every 5 seconds to sync Admin toggles across browsers
+  setInterval(fetchGlobalConfig, 5000);
 
   if (btnDeptCSKH) {
     btnDeptCSKH.addEventListener('click', () => loadDepartmentData('cskh'));
@@ -337,7 +402,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Handle product select change (Keep commentInput blank for manual typing as per user request)
+  // Handle product select change
   excelProductSelect.addEventListener('change', () => {
     const selectedUrl = excelProductSelect.value;
     if (selectedUrl) {
@@ -352,8 +417,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Update Template Select Box in background if needed
         updateTemplateOptions(found);
 
-        // Leave comment input empty for manual typing as requested
-        commentInput.value = '';
+        // System-wide Auto-Fill Template 1 behavior:
+        if (isAutoFillOn && (found.template1 || found.template2)) {
+          commentInput.value = found.template1 || found.template2;
+          if (templateBox) templateBox.style.display = 'block';
+          if (btnToggleTemplates) btnToggleTemplates.innerHTML = '<i class="fa-solid fa-eye-slash"></i> 💡 Ẩn Gợi Ý Mẫu Câu';
+          log(`[Auto-Fill System] Đã tự động điền Mẫu 1 cho sản phẩm "${found.name}".`, 'info');
+        } else {
+          commentInput.value = '';
+        }
         updateCharCount();
       }
     } else {

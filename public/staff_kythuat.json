@@ -1,0 +1,80 @@
+[
+  {
+    "staffName": "Chí Sơn",
+    "fromStt": 1,
+    "toStt": 10,
+    "count": 10
+  },
+  {
+    "staffName": "Huỳnh Sơn",
+    "fromStt": 11,
+    "toStt": 20,
+    "count": 10
+  },
+  {
+    "staffName": "Nguyễn Dũng",
+    "fromStt": 21,
+    "toStt": 30,
+    "count": 10
+  },
+  {
+    "staffName": "Như Vinh",
+    "fromStt": 31,
+    "toStt": 40,
+    "count": 10
+  },
+  {
+    "staffName": "Tâm HCM",
+    "fromStt": 41,
+    "toStt": 50,
+    "count": 10
+  },
+  {
+    "staffName": "Thị Hà Nội",
+    "fromStt": 51,
+    "toStt": 60,
+    "count": 10
+  },
+  {
+    "staffName": "Nguyễn Xuân Tú",
+    "fromStt": 61,
+    "toStt": 70,
+    "count": 10
+  },
+  {
+    "staffName": "Phạm Quang Điệp",
+    "fromStt": 71,
+    "toStt": 80,
+    "count": 10
+  },
+  {
+    "staffName": "Hoàng Văn Tiến",
+    "fromStt": 81,
+    "toStt": 90,
+    "count": 10
+  },
+  {
+    "staffName": "Chu Xuân Thành",
+    "fromStt": 91,
+    "toStt": 100,
+    "count": 10
+  },
+  {
+    "staffName": "Lê Thanh Phong",
+    "fromStt": 101,
+    "toStt": 110,
+    "count": 10
+  },
+  {
+    "staffName": "Hoàng Tùng",
+    "fromStt": 111,
+    "toStt": 119,
+    "count": 9
+  },
+  {
+    "staffName": "Nguyễn Xuân Lâm",
+    "fromStt": 120,
+    "toStt": 128,
+    "count": 9
+  }
+]

@@ -1,5 +1,5 @@
-// CSKH Staff Assignment data
-const staffListDefault = [
+// Staff Assignment data Default (CSKH vs Kỹ Thuật)
+const staffCSKHDefault = [
   { "staffName": "Cao Hương", "fromStt": 1, "toStt": 19, "count": 19 },
   { "staffName": "Quỳnh Hương", "fromStt": 20, "toStt": 38, "count": 19 },
   { "staffName": "Quỳnh Như", "fromStt": 39, "toStt": 56, "count": 18 },
@@ -7,6 +7,22 @@ const staffListDefault = [
   { "staffName": "Thị Thu", "fromStt": 75, "toStt": 92, "count": 18 },
   { "staffName": "Lan Anh", "fromStt": 93, "toStt": 110, "count": 18 },
   { "staffName": "Nguyễn Quỳnh", "fromStt": 111, "toStt": 128, "count": 18 }
+];
+
+const staffKyThuatDefault = [
+  { "staffName": "Chí Sơn", "fromStt": 1, "toStt": 10, "count": 10 },
+  { "staffName": "Huỳnh Sơn", "fromStt": 11, "toStt": 20, "count": 10 },
+  { "staffName": "Nguyễn Dũng", "fromStt": 21, "toStt": 30, "count": 10 },
+  { "staffName": "Như Vinh", "fromStt": 31, "toStt": 40, "count": 10 },
+  { "staffName": "Tâm HCM", "fromStt": 41, "toStt": 50, "count": 10 },
+  { "staffName": "Thị Hà Nội", "fromStt": 51, "toStt": 60, "count": 10 },
+  { "staffName": "Nguyễn Xuân Tú", "fromStt": 61, "toStt": 70, "count": 10 },
+  { "staffName": "Phạm Quang Điệp", "fromStt": 71, "toStt": 80, "count": 10 },
+  { "staffName": "Hoàng Văn Tiến", "fromStt": 81, "toStt": 90, "count": 10 },
+  { "staffName": "Chu Xuân Thành", "fromStt": 91, "toStt": 100, "count": 10 },
+  { "staffName": "Lê Thanh Phong", "fromStt": 101, "toStt": 110, "count": 10 },
+  { "staffName": "Hoàng Tùng", "fromStt": 111, "toStt": 119, "count": 9 },
+  { "staffName": "Nguyễn Xuân Lâm", "fromStt": 120, "toStt": 128, "count": 9 }
 ];
 
 const sampleReviewerNames = [
@@ -18,6 +34,9 @@ const sampleReviewerNames = [
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const btnDeptCSKH = document.getElementById('btnDeptCSKH');
+  const btnDeptKyThuat = document.getElementById('btnDeptKyThuat');
+
   const staffSelect = document.getElementById('staffSelect');
   const staffProductCountBadge = document.getElementById('staffProductCountBadge');
   const excelProductSelect = document.getElementById('excelProductSelect');
@@ -62,8 +81,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const logTerminal = document.getElementById('logTerminal');
   const btnClearLog = document.getElementById('btnClearLog');
 
+  let currentDept = localStorage.getItem('kuchen_selected_dept') || 'cskh';
   let allProducts = [];
-  let staffList = staffListDefault;
+  let staffList = staffCSKHDefault;
   let isBatchRunning = false;
   let isAutoPilotRunning = false;
 
@@ -79,6 +99,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     line.textContent = `[${time}] ${msg}`;
     logTerminal.appendChild(line);
     logTerminal.scrollTop = logTerminal.scrollHeight;
+  }
+
+  function updateDeptButtons() {
+    if (btnDeptCSKH && btnDeptKyThuat) {
+      if (currentDept === 'cskh') {
+        btnDeptCSKH.classList.add('active');
+        btnDeptKyThuat.classList.remove('active');
+      } else {
+        btnDeptKyThuat.classList.add('active');
+        btnDeptCSKH.classList.remove('active');
+      }
+    }
+  }
+
+  async function loadDepartmentData(dept) {
+    currentDept = dept;
+    localStorage.setItem('kuchen_selected_dept', dept);
+    updateDeptButtons();
+
+    const pFile = dept === 'cskh' ? 'products_cskh.json' : 'products_kythuat.json';
+    const sFile = dept === 'cskh' ? 'staff_cskh.json' : 'staff_kythuat.json';
+    const fallbackStaff = dept === 'cskh' ? staffCSKHDefault : staffKyThuatDefault;
+
+    try {
+      const [pRes, sRes] = await Promise.all([fetch(pFile), fetch(sFile)]);
+      if (pRes.ok) allProducts = await pRes.json();
+      if (sRes.ok) staffList = await sRes.json(); else staffList = fallbackStaff;
+    } catch (e) {
+      staffList = fallbackStaff;
+    }
+
+    populateStaffDropdown(staffList);
+    filterProductsByStaff('ALL');
   }
 
   // Save completion status locally AND sync to Global Worker Database
@@ -105,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       localStorage.setItem('kuchen_completed_reviews', JSON.stringify(existing));
     } catch (e) {}
 
-    // 2. Sync to Global Worker Server for all CSKH staff members
+    // 2. Sync to Global Worker Server for all staff members
     try {
       fetch('/api/update-status', {
         method: 'POST',
@@ -181,27 +234,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnClearLog.addEventListener('click', () => { if (logTerminal) logTerminal.innerHTML = ''; });
   }
 
-  // Load datasets
-  try {
-    const [pRes, sRes] = await Promise.all([
-      fetch('products_assigned.json'),
-      fetch('staff_list.json')
-    ]);
-    if (pRes.ok) allProducts = await pRes.json();
-    if (sRes.ok) staffList = await sRes.json();
-  } catch (e) {
-    console.warn('Using fallback memory dataset');
+  await loadDepartmentData(currentDept);
+
+  if (btnDeptCSKH) {
+    btnDeptCSKH.addEventListener('click', () => loadDepartmentData('cskh'));
+  }
+  if (btnDeptKyThuat) {
+    btnDeptKyThuat.addEventListener('click', () => loadDepartmentData('kythuat'));
   }
 
-  populateStaffDropdown(staffList);
-  filterProductsByStaff('ALL');
-
   function populateStaffDropdown(sList) {
-    staffSelect.innerHTML = '<option value="ALL">-- Tất cả sản phẩm (128 sản phẩm) --</option>';
+    const deptTitle = currentDept === 'cskh' ? 'CSKH' : 'Kỹ Thuật';
+    staffSelect.innerHTML = `<option value="ALL">-- Tất cả sản phẩm ${deptTitle} (${allProducts.length} sản phẩm) --</option>`;
     sList.forEach(s => {
       const opt = document.createElement('option');
       opt.value = s.staffName;
-      opt.textContent = `👤 CSKH: ${s.staffName} (STT ${s.fromStt} -> ${s.toStt}: ${s.count} SP)`;
+      opt.textContent = `👤 ${deptTitle}: ${s.staffName} (STT ${s.fromStt} -> ${s.toStt}: ${s.count} SP)`;
       staffSelect.appendChild(opt);
     });
   }
@@ -218,10 +266,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let filtered = allProducts;
     if (staffName !== 'ALL') {
       filtered = allProducts.filter(p => p.assignee === staffName);
-      staffProductCountBadge.textContent = `CSKH phụ trách: ${staffName} (${filtered.length} SP)`;
-      log(`[Phân Công] 👤 Bạn đã chọn nhân viên CSKH: "${staffName}". Tìm thấy ${filtered.length} sản phẩm.`, 'success');
+      staffProductCountBadge.textContent = `Phụ trách: ${staffName} (${filtered.length} SP)`;
+      log(`[Phân Công] 👤 Bạn đã chọn nhân viên: "${staffName}". Tìm thấy ${filtered.length} sản phẩm.`, 'success');
     } else {
-      staffProductCountBadge.textContent = `Tất cả CSKH: ${allProducts.length} SP`;
+      staffProductCountBadge.textContent = `Tất cả: ${allProducts.length} SP`;
       log(`[Phân Công] Hiển thị tất cả ${allProducts.length} sản phẩm Kuchen.`, 'info');
     }
 
@@ -239,7 +287,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const opt = document.createElement('option');
       opt.value = p.url;
       const idText = p.productId ? `ID: ${p.productId}` : `STT ${p.stt}`;
-      opt.textContent = `[${idText}] [CSKH: ${p.assignee}] ${p.name} (${p.sku || 'N/A'})`;
+      opt.textContent = `[${idText}] [${p.assignee}] ${p.name} (${p.sku || 'N/A'})`;
       excelProductSelect.appendChild(opt);
     });
   }
@@ -584,7 +632,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnStopAutoPilot.style.display = 'inline-flex';
       autoPilotProgressSection.style.display = 'block';
 
-      log(`[Auto-Pilot] 🚀 Bắt đầu tiến trình chạy tự động toàn bộ ${allProducts.length} sản phẩm Kuchen...`, 'info');
+      log(`[Auto-Pilot] 🚀 Bắt đầu tiến trình chạy tự động toàn bộ ${allProducts.length} sản phẩm Kuchen (${currentDept.toUpperCase()})...`, 'info');
 
       for (let i = 0; i < allProducts.length; i++) {
         if (!isAutoPilotRunning) break;

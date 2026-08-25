@@ -162,6 +162,37 @@
       white-space: nowrap;
     }
 
+    .dept-switch-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .dept-btn {
+      flex: 1;
+      padding: 12px 16px;
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      min-height: 46px;
+    }
+
+    .dept-btn.active {
+      background: rgba(37, 99, 235, 0.08);
+      border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
+    }
+
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -243,39 +274,6 @@
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    }
-
-    .template-box {
-      background: rgba(217, 119, 6, 0.05);
-      border: 1px solid rgba(217, 119, 6, 0.2);
-      border-radius: var(--radius-md);
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-
-    .template-btns {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-      flex-wrap: wrap;
-    }
-
-    .btn-template {
-      padding: 6px 12px;
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #334155;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .btn-template:hover {
-      background: #f1f5f9;
-      border-color: var(--primary);
-      color: var(--primary);
     }
 
     .tabs-nav { display: flex; gap: 8px; }
@@ -521,13 +519,23 @@
       <section class="card">
         <div class="card-header">
           <div class="card-header-title">
-            <i class="fa-solid fa-user-check accent-icon"></i>
-            <h3>Chọn Tên Người Phụ Trách</h3>
+            <i class="fa-solid fa-building-user accent-icon"></i>
+            <h3>Chọn Bộ Phận & Người Phụ Trách</h3>
           </div>
           <div class="excel-upload-btn-wrapper">
             <button class="btn btn-sm btn-outline"><i class="fa-solid fa-file-excel"></i> Upload File Phân Công</button>
             <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv">
           </div>
+        </div>
+
+        <!-- Department Switcher Buttons -->
+        <div class="dept-switch-container">
+          <button type="button" class="dept-btn active" id="btnDeptCSKH">
+            <i class="fa-solid fa-headset"></i> Bộ Phận CSKH (7 người)
+          </button>
+          <button type="button" class="dept-btn" id="btnDeptKyThuat">
+            <i class="fa-solid fa-wrench"></i> Bộ Phận Kỹ Thuật (13 người)
+          </button>
         </div>
 
         <!-- Staff Selector -->
@@ -697,7 +705,7 @@
 
             <div class="autopilot-features-grid">
               <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> 128/128 Sản Phẩm Kuchen</div>
-              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Phân công đúng 13 Nhân viên</div>
+              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Phân công chuẩn Bộ phận chọn</div>
               <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Tự bốc Mẫu câu 1 / Mẫu 2 chuẩn</div>
               <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> SĐT 0334333777 & Email chung</div>
               <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Giãn cách ngẫu nhiên (3 - 6 giây)</div>

@@ -1,0 +1,44 @@
+[
+  {
+    "staffName": "Cao Hương",
+    "fromStt": 1,
+    "toStt": 19,
+    "count": 19
+  },
+  {
+    "staffName": "Quỳnh Hương",
+    "fromStt": 20,
+    "toStt": 38,
+    "count": 19
+  },
+  {
+    "staffName": "Quỳnh Như",
+    "fromStt": 39,
+    "toStt": 56,
+    "count": 18
+  },
+  {
+    "staffName": "Thu Trang",
+    "fromStt": 57,
+    "toStt": 74,
+    "count": 18
+  },
+  {
+    "staffName": "Thị Thu",
+    "fromStt": 75,
+    "toStt": 92,
+    "count": 18
+  },
+  {
+    "staffName": "Lan Anh",
+    "fromStt": 93,
+    "toStt": 110,
+    "count": 18
+  },
+  {
+    "staffName": "Nguyễn Quỳnh",
+    "fromStt": 111,
+    "toStt": 128,
+    "count": 18
+  }
+]

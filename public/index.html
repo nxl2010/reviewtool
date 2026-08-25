@@ -257,6 +257,13 @@
       transition: all 0.2s ease;
     }
 
+    input[readonly] {
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text-muted);
+      cursor: not-allowed;
+      border-style: dashed;
+    }
+
     input:focus, textarea:focus, select:focus {
       outline: none;
       border-color: var(--primary);
@@ -467,7 +474,7 @@
           <div class="logo-icon"><i class="fa-solid fa-sun"></i></div>
           <div>
             <h1>Kuchen Review Automation</h1>
-            <p class="subtitle">Tự động gửi đánh giá sản phẩm Kuchen • Ô nhập trống không điền trước</p>
+            <p class="subtitle">Tự động gửi đánh giá sản phẩm Kuchen • Đã khóa URL & Product ID chuẩn xác</p>
           </div>
         </div>
         
@@ -521,12 +528,12 @@
 
         <div class="product-info-box">
           <div class="form-group">
-            <label for="productUrlInput"><i class="fa-solid fa-link"></i> URL Sản Phẩm Targets</label>
-            <input type="text" id="productUrlInput" value="" placeholder="Dán hoặc chọn đường dẫn URL sản phẩm...">
+            <label for="productUrlInput"><i class="fa-solid fa-link"></i> URL Sản Phẩm Targets (Tự động khóa <i class="fa-solid fa-lock" style="font-size:10px;"></i>)</label>
+            <input type="text" id="productUrlInput" value="" readonly placeholder="Tự động điền theo sản phẩm bạn chọn...">
           </div>
           <div class="form-group">
-            <label for="productIdInput"><i class="fa-solid fa-key"></i> Product ID (comment_post_ID)</label>
-            <input type="text" id="productIdInput" value="" placeholder="Ví dụ: 9778">
+            <label for="productIdInput"><i class="fa-solid fa-key"></i> WooCommerce Product ID (Tự động khóa <i class="fa-solid fa-lock" style="font-size:10px;"></i>)</label>
+            <input type="text" id="productIdInput" value="" readonly placeholder="Tự động lấy ID thật...">
           </div>
         </div>
       </section>
@@ -659,7 +666,7 @@
           <button class="btn btn-sm btn-outline" id="btnClearLog"><i class="fa-solid fa-trash"></i> Xóa Log</button>
         </div>
         <div class="log-terminal" id="logTerminal">
-          <div class="log-line info">[System] Ứng dụng sẵn sàng. Các ô nhập liệu đã để trống để điền mới!</div>
+          <div class="log-line info">[System] Đã khóa các ô URL và Product ID. Vui lòng chọn sản phẩm trong Menu.</div>
         </div>
       </section>
     </main>
@@ -668,7 +675,7 @@
     <iframe name="hidden_submit_iframe" id="hidden_submit_iframe"></iframe>
 
     <footer class="app-footer">
-      <p>Kuchen Review Automation &bull; Clean Input Mode</p>
+      <p>Kuchen Review Automation &bull; Locked Readonly Mode</p>
     </footer>
   </div>
 

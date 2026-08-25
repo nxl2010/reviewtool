@@ -108,7 +108,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Default select prompt
     const defaultOpt = document.createElement('option');
     defaultOpt.value = '';
     defaultOpt.textContent = `-- Chọn sản phẩm trong danh sách (${filtered.length} sản phẩm) --`;
@@ -117,7 +116,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     filtered.forEach((p) => {
       const opt = document.createElement('option');
       opt.value = p.url;
-      opt.textContent = `[STT ${p.stt}] [${p.assignee}] ${p.name} (${p.sku || 'N/A'})`;
+      const idText = p.productId ? `ID: ${p.productId}` : `STT ${p.stt}`;
+      opt.textContent = `[${idText}] [${p.assignee}] ${p.name} (${p.sku || 'N/A'})`;
       excelProductSelect.appendChild(opt);
     });
   }
@@ -129,10 +129,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       productUrlInput.value = selectedUrl;
       const found = allProducts.find(p => p.url === selectedUrl);
       if (found) {
-        // Auto set Product ID if known
-        productIdInput.value = found.stt === 4 ? '9778' : found.stt;
-        realProductId.value = productIdInput.value;
-        log(`[Sản Phẩm] Đã chọn: "[STT ${found.stt}] ${found.name}" (Người phụ trách: ${found.assignee})`, 'info');
+        // Auto set Product ID using real WooCommerce ID
+        const targetId = found.productId || (found.stt === 4 || found.stt === 100 ? '9778' : found.stt);
+        productIdInput.value = targetId;
+        realProductId.value = targetId;
+        log(`[Sản Phẩm] Đã chọn: "${found.name}" (Real Product ID: ${targetId})`, 'info');
       }
     } else {
       productUrlInput.value = '';

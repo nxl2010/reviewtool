@@ -57,6 +57,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     logTerminal.scrollTop = logTerminal.scrollHeight;
   }
 
+  // Save completion status to localStorage for real-time Dashboard sync
+  function recordCompletion(productId, data) {
+    try {
+      const existing = JSON.parse(localStorage.getItem('kuchen_completed_reviews') || '{}');
+      existing[productId] = {
+        productId: productId,
+        stt: data.stt || productId,
+        name: data.name || 'Sản phẩm Kuchen',
+        url: data.url || '',
+        assignee: data.assignee || staffSelect.value || 'Người dùng',
+        status: 'HOÀN THÀNH',
+        statusClass: 'completed',
+        reviewContent: data.comment,
+        reviewerName: data.author,
+        reviewerPhone: data.phone,
+        rating: data.rating || 5,
+        completedAt: new Date().toLocaleString('vi-VN')
+      };
+      localStorage.setItem('kuchen_completed_reviews', JSON.stringify(existing));
+    } catch (e) {
+      console.warn('LocalStorage save error:', e);
+    }
+  }
+
   btnClearLog.addEventListener('click', () => { logTerminal.innerHTML = ''; });
 
   // Load datasets
@@ -129,7 +153,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       productUrlInput.value = selectedUrl;
       const found = allProducts.find(p => p.url === selectedUrl);
       if (found) {
-        // Auto set Product ID using real WooCommerce ID
         const targetId = found.productId || (found.stt === 4 || found.stt === 100 ? '9778' : found.stt);
         productIdInput.value = targetId;
         realProductId.value = targetId;
@@ -140,61 +163,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       productIdInput.value = '';
       realProductId.value = '';
     }
-  });
-
-  // Client-side Excel upload override
-  excelFileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    log(`[Excel Upload] Đang đọc file: ${file.name}...`, 'info');
-    const reader = new FileReader();
-
-    reader.onload = (evt) => {
-      try {
-        const data = new Uint8Array(evt.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        
-        let sheetName = workbook.SheetNames.find(s => s.includes('Danh sách')) || workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-        const customProducts = [];
-        const customStaff = new Set();
-
-        for (let i = 0; i < rows.length; i++) {
-          const r = rows[i];
-          if (r && r.length >= 2) {
-            const urlCol = r.find(col => typeof col === 'string' && col.startsWith('http'));
-            const nameCol = r.find(col => typeof col === 'string' && col.length > 5 && !col.startsWith('http'));
-            const staffCol = r[8] || r[7] || 'Tự nạp';
-
-            if (urlCol && nameCol) {
-              customProducts.push({
-                stt: i,
-                name: nameCol,
-                url: urlCol,
-                assignee: staffCol
-              });
-              if (staffCol && staffCol !== 'Tự nạp') customStaff.add(staffCol);
-            }
-          }
-        }
-
-        if (customProducts.length > 0) {
-          allProducts = customProducts;
-          log(`[Excel Upload] 🎉 Đã nạp thành công ${customProducts.length} sản phẩm từ file Excel!`, 'success');
-
-          const sArray = Array.from(customStaff).map(s => ({ staffName: s, fromStt: 1, toStt: customProducts.length, count: customProducts.length }));
-          if (sArray.length > 0) populateStaffDropdown(sArray);
-
-          filterProductsByStaff('ALL');
-        }
-      } catch (err) {
-        log(`[Excel Upload] ❌ Lỗi đọc file Excel: ${err.message}`, 'error');
-      }
-    };
-    reader.readAsArrayBuffer(file);
   });
 
   // Sync Product ID
@@ -219,14 +187,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     charCount.style.color = len >= 10 ? '#34d399' : '#f87171';
   });
 
-  // Single Submission
+  // Single Submission Handler
   realForm.addEventListener('submit', (e) => {
     realProductId.value = productIdInput.value.trim();
+    const pid = realProductId.value;
     const author = document.getElementById('authorInput').value.trim();
     const phone = document.getElementById('phoneInput').value.trim();
     const comment = commentInput.value.trim();
+    const ratingEl = document.querySelector('input[name="rating"]:checked');
+    const rating = ratingEl ? parseInt(ratingEl.value) : 5;
 
-    if (!realProductId.value) {
+    if (!pid) {
       e.preventDefault();
       alert('Vui lòng chọn sản phẩm hoặc nhập Product ID!');
       log('Vui lòng chọn sản phẩm hoặc nhập Product ID!', 'warning');
@@ -240,7 +211,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    log(`[Single Review] Đang gửi đánh giá của "${author}" (${phone}) cho Product ID ${realProductId.value}...`, 'info');
+    const selectedUrl = productUrlInput.value;
+    const foundProduct = allProducts.find(p => p.url === selectedUrl || p.productId == pid);
+
+    // Save completion state locally for Dashboard sync
+    recordCompletion(pid, {
+      stt: foundProduct ? foundProduct.stt : pid,
+      name: foundProduct ? foundProduct.name : 'Sản phẩm Kuchen',
+      url: selectedUrl,
+      assignee: foundProduct ? foundProduct.assignee : staffSelect.value,
+      author: author,
+      phone: phone,
+      comment: comment,
+      rating: rating
+    });
+
+    log(`[Single Review] Đang gửi đánh giá của "${author}" (${phone}) cho Product ID ${pid}...`, 'info');
     
     btnSubmitSingle.disabled = true;
     btnSubmitSingle.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi...';
@@ -248,8 +234,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     setTimeout(() => {
       btnSubmitSingle.disabled = false;
       btnSubmitSingle.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi Đánh Giá Ngay';
-      log(`[Single Review] 🎉 THÀNH CÔNG: Đã phát request gửi đánh giá lên kuchen.vn!`, 'success');
-      alert('🎉 Đánh giá đã được gửi thành công!');
+      log(`[Single Review] 🎉 THÀNH CÔNG: Đã phát request gửi đánh giá lên kuchen.vn và lưu trạng thái hoàn thành!`, 'success');
+      alert('🎉 Đánh giá đã được gửi thành công! Trạng thái đã cập nhật vào Dashboard.');
     }, 1500);
   });
 
@@ -312,6 +298,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
+    const selectedUrl = productUrlInput.value;
+    const foundProduct = allProducts.find(p => p.url === selectedUrl || p.productId == pid);
+
     isBatchRunning = true;
     btnStartBatch.style.display = 'none';
     btnStopBatch.style.display = 'inline-flex';
@@ -356,6 +345,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       tempForm.submit();
       document.body.removeChild(tempForm);
 
+      // Record completion status locally for Dashboard
+      recordCompletion(pid, {
+        stt: foundProduct ? foundProduct.stt : pid,
+        name: foundProduct ? foundProduct.name : 'Sản phẩm Kuchen',
+        url: selectedUrl,
+        assignee: foundProduct ? foundProduct.assignee : staffSelect.value,
+        author: item.author,
+        phone: item.phone,
+        comment: item.comment,
+        rating: item.rating
+      });
+
       const pct = Math.round(((i + 1) / items.length) * 100);
       progressBarFill.style.width = `${pct}%`;
       progressPercent.textContent = `${pct}%`;
@@ -370,7 +371,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    log('[Batch] 🎉 ĐÃ HOÀN THÀNH TẤT CẢ LƯỢT GỬI HÀNG LOẠT!', 'success');
+    log('[Batch] 🎉 ĐÃ HOÀN THÀNH TẤT CẢ LƯỢT GỬI HÀNG LOẠT! Trạng thái đã cập nhật vào Dashboard.', 'success');
     stopBatch();
   });
 

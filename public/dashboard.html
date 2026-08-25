@@ -199,7 +199,7 @@
     <header class="header-card">
       <div class="header-title">
         <h1><i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> Dashboard Quản Lý Trạng Thái Đánh Giá</h1>
-        <p>Thống kê chi tiết trạng thái hoàn thành đánh giá cho 128 sản phẩm Kuchen</p>
+        <p>Thống kê chi tiết tiến độ hoàn thành đánh giá thực tế cho 128 sản phẩm Kuchen</p>
       </div>
       <a href="index.html" class="nav-btn"><i class="fa-solid fa-arrow-left"></i> Quay Lại Tool Gửi Đánh Giá</a>
     </header>
@@ -284,6 +284,26 @@
         console.warn('Status file loading...');
       }
 
+      // Merge real-time completions from LocalStorage
+      try {
+        const localCompletions = JSON.parse(localStorage.getItem('kuchen_completed_reviews') || '{}');
+        allStatusData.forEach(item => {
+          const pid = item.productId || item.stt;
+          if (localCompletions[pid]) {
+            const loc = localCompletions[pid];
+            item.status = 'HOÀN THÀNH';
+            item.statusClass = 'completed';
+            item.reviewContent = loc.reviewContent;
+            item.reviewerName = loc.reviewerName;
+            item.reviewerPhone = loc.reviewerPhone;
+            item.rating = loc.rating || 5;
+            item.completedAt = loc.completedAt;
+          }
+        });
+      } catch (err) {
+        console.warn('Error reading local completions:', err);
+      }
+
       // Populate Staff Filter
       const staffNames = Array.from(new Set(allStatusData.map(d => d.assignee)));
       staffNames.forEach(name => {
@@ -310,7 +330,7 @@
             <td><span style="font-weight:600; color:#2563eb;">👤 ${item.assignee}</span></td>
             <td>
               <a href="${item.url}" target="_blank" class="btn-link">${item.name}</a>
-              <div style="font-size:11px; color:#64748b;">SKU: ${item.sku || 'N/A'}</div>
+              <div style="font-size:11px; color:#64748b;">SKU: ${item.sku || 'N/A'} (ID: ${item.productId || 'N/A'})</div>
             </td>
             <td>
               ${isDone ? `

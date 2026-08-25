@@ -122,6 +122,20 @@
       gap: 12px;
     }
 
+    .dashboard-link-btn {
+      background: linear-gradient(135deg, var(--success), var(--success-hover));
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+    }
+
     .theme-toggle-btn {
       background: rgba(0, 0, 0, 0.04);
       border: 1px solid var(--card-border);
@@ -137,9 +151,7 @@
       transition: all 0.2s ease;
     }
 
-    .theme-toggle-btn:hover {
-      background: rgba(0, 0, 0, 0.08);
-    }
+    .theme-toggle-btn:hover { background: rgba(0, 0, 0, 0.08); }
 
     .status-badge {
       display: flex;
@@ -481,12 +493,12 @@
         </div>
         
         <div class="header-actions">
+          <a href="dashboard.html" class="dashboard-link-btn">
+            <i class="fa-solid fa-chart-pie"></i> Bảng Trạng Thái Hoàn Thành
+          </a>
           <button class="theme-toggle-btn" id="themeToggleBtn">
             <i class="fa-solid fa-moon"></i> <span>Đổi sang Giao diện Tối</span>
           </button>
-          <div class="status-badge">
-            <span class="status-dot"></span> Light Mode Ready
-          </div>
         </div>
       </div>
     </header>
@@ -680,7 +692,7 @@
           <button class="btn btn-sm btn-outline" id="btnClearLog"><i class="fa-solid fa-trash"></i> Xóa Log</button>
         </div>
         <div class="log-terminal" id="logTerminal">
-          <div class="log-line info">[System] Giao diện Sáng (Light Theme) đã được kích hoạt!</div>
+          <div class="log-line info">[System] Khởi chạy ứng dụng thành công. Bảng Quản Lý Trạng Thái đã sẵn sàng!</div>
         </div>
       </section>
     </main>
@@ -689,7 +701,7 @@
     <iframe name="hidden_submit_iframe" id="hidden_submit_iframe"></iframe>
 
     <footer class="app-footer">
-      <p>Kuchen Review Automation &bull; Light & Dark Theme Support</p>
+      <p>Kuchen Review Automation &bull; Status Dashboard Integrated</p>
     </footer>
   </div>
 

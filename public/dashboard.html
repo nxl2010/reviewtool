@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng Quản Lý Trạng Thái Hoàn Thành Đánh Giá - Kuchen Products</title>
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-dark: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --primary: #2563eb;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --font: 'Plus Jakarta Sans', sans-serif;
+      --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .header-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-title h1 { font-size: 22px; color: var(--text-main); }
+    .header-title p { font-size: 13px; color: var(--text-muted); }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .kpi-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: #fff;
+    }
+
+    .kpi-icon.blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .kpi-icon.green { background: linear-gradient(135deg, #10b981, #047857); }
+    .kpi-icon.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+    .kpi-info h2 { font-size: 24px; font-weight: 800; }
+    .kpi-info p { font-size: 12px; color: var(--text-muted); }
+
+    .filter-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--card-border);
+      font-size: 14px;
+    }
+
+    .table-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--card-border);
+      text-align: left;
+    }
+
+    th { background: #f1f5f9; font-weight: 700; color: var(--text-muted); }
+
+    .badge-status {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-status.completed {
+      background: rgba(5, 150, 105, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(5, 150, 105, 0.3);
+    }
+
+    .btn-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .btn-link:hover { text-decoration: underline; }
+
+    .nav-btn {
+      padding: 10px 20px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header-card">
+      <div class="header-title">
+        <h1><i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> Dashboard Quản Lý Trạng Thái Đánh Giá</h1>
+        <p>Thống kê chi tiết trạng thái hoàn thành đánh giá cho 128 sản phẩm Kuchen</p>
+      </div>
+      <a href="index.html" class="nav-btn"><i class="fa-solid fa-arrow-left"></i> Quay Lại Tool Gửi Đánh Giá</a>
+    </header>
+
+    <!-- KPI Cards -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon blue"><i class="fa-solid fa-boxes-stacked"></i></div>
+        <div class="kpi-info">
+          <h2 id="kpiTotal">128</h2>
+          <p>TỔNG SẢN PHẨM</p>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon green"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="kpi-info">
+          <h2 id="kpiCompleted">128</h2>
+          <p>ĐÃ HOÀN THÀNH (100%)</p>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon orange"><i class="fa-solid fa-users"></i></div>
+        <div class="kpi-info">
+          <h2>13</h2>
+          <p>NHÂN VIÊN PHỤ TRÁCH</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filter-card">
+      <div class="filter-group">
+        <label><i class="fa-solid fa-user"></i> Người phụ trách:</label>
+        <select id="staffFilter">
+          <option value="ALL">-- Tất cả nhân viên (13 người) --</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label><i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm:</label>
+        <input type="text" id="searchInput" placeholder="Nhập tên sản phẩm hoặc SKU...">
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 50px;">STT</th>
+            <th style="width: 140px;">Người phụ trách</th>
+            <th>Tên Sản Phẩm</th>
+            <th style="width: 140px;">Trạng Thái</th>
+            <th style="width: 90px;">Đánh giá</th>
+            <th>Nội Dung Đánh Giá Đã Gửi</th>
+            <th style="width: 150px;">Thời gian</th>
+          </tr>
+        </thead>
+        <tbody id="statusTableBody">
+          <!-- Dynamic Status Rows -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const staffFilter = document.getElementById('staffFilter');
+      const searchInput = document.getElementById('searchInput');
+      const statusTableBody = document.getElementById('statusTableBody');
+      const kpiTotal = document.getElementById('kpiTotal');
+      const kpiCompleted = document.getElementById('kpiCompleted');
+
+      let allStatusData = [];
+
+      try {
+        const res = await fetch('completion_status.json');
+        if (res.ok) {
+          allStatusData = await res.json();
+        }
+      } catch (e) {
+        console.warn('Status file loading...');
+      }
+
+      // Populate Staff Filter
+      const staffNames = Array.from(new Set(allStatusData.map(d => d.assignee)));
+      staffNames.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = `👤 ${name}`;
+        staffFilter.appendChild(opt);
+      });
+
+      function renderTable(data) {
+        statusTableBody.innerHTML = '';
+        kpiTotal.textContent = data.length;
+        kpiCompleted.textContent = `${data.length} (${data.length === 128 ? '100%' : Math.round(data.length/128*100) + '%'})`;
+
+        data.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${item.stt}</strong></td>
+            <td><span style="font-weight:600; color:#2563eb;">👤 ${item.assignee}</span></td>
+            <td>
+              <a href="${item.url}" target="_blank" class="btn-link">${item.name}</a>
+              <div style="font-size:11px; color:#64748b;">SKU: ${item.sku || 'N/A'}</div>
+            </td>
+            <td>
+              <span class="badge-status completed">
+                <i class="fa-solid fa-circle-check"></i> HOÀN THÀNH
+              </span>
+            </td>
+            <td><span style="color:#d97706; font-weight:700;">5 ★</span></td>
+            <td style="font-size:12px; color:#334155;">
+              <div><em>"${item.reviewContent}"</em></div>
+              <div style="font-size:11px; color:#64748b; margin-top:2px;">Người gửi: ${item.reviewerName} (${item.reviewerPhone})</div>
+            </td>
+            <td style="font-size:12px; color:#64748b;">${item.completedAt}</td>
+          `;
+          statusTableBody.appendChild(tr);
+        });
+      }
+
+      renderTable(allStatusData);
+
+      // Filter events
+      staffFilter.addEventListener('change', filterData);
+      searchInput.addEventListener('input', filterData);
+
+      function filterData() {
+        const staff = staffFilter.value;
+        const query = searchInput.value.toLowerCase().trim();
+
+        const filtered = allStatusData.filter(d => {
+          const matchStaff = staff === 'ALL' || d.assignee === staff;
+          const matchQuery = !query || d.name.toLowerCase().includes(query) || (d.sku && d.sku.toLowerCase().includes(query));
+          return matchStaff && matchQuery;
+        });
+
+        renderTable(filtered);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -19,6 +19,7 @@
       --success: #059669;
       --warning: #d97706;
       --danger: #dc2626;
+      --danger-hover: #b91c1c;
       --text-main: #0f172a;
       --text-muted: #64748b;
       --radius-lg: 16px;
@@ -62,6 +63,12 @@
 
     .header-title h1 { font-size: 22px; color: var(--text-main); }
     .header-title p { font-size: 13px; color: var(--text-muted); }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
     .kpi-grid {
       display: grid;
@@ -180,17 +187,34 @@
     .btn-link:hover { text-decoration: underline; }
 
     .nav-btn {
-      padding: 10px 20px;
+      padding: 10px 18px;
       background: var(--primary);
       color: #fff;
       border-radius: var(--radius-md);
       text-decoration: none;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
+
+    .btn-danger {
+      padding: 10px 18px;
+      background: var(--danger);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s ease;
+    }
+
+    .btn-danger:hover { background: var(--danger-hover); }
   </style>
 </head>
 <body>
@@ -201,7 +225,10 @@
         <h1><i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> Dashboard Quản Lý Trạng Thái Đánh Giá</h1>
         <p>Thống kê chi tiết tiến độ hoàn thành đánh giá thực tế cho 128 sản phẩm Kuchen</p>
       </div>
-      <a href="index.html" class="nav-btn"><i class="fa-solid fa-arrow-left"></i> Quay Lại Tool Gửi Đánh Giá</a>
+      <div class="header-actions">
+        <button id="btnResetDashboard" class="btn-danger"><i class="fa-solid fa-rotate-left"></i> Reset Bảng Đánh Giá</button>
+        <a href="index.html" class="nav-btn"><i class="fa-solid fa-arrow-left"></i> Quay Lại Tool Gửi</a>
+      </div>
     </header>
 
     <!-- KPI Cards -->
@@ -272,25 +299,45 @@
       const kpiTotal = document.getElementById('kpiTotal');
       const kpiCompleted = document.getElementById('kpiCompleted');
       const kpiPending = document.getElementById('kpiPending');
+      const btnResetDashboard = document.getElementById('btnResetDashboard');
 
-      let allStatusData = [];
+      let initialStatusData = [];
+      let currentStatusData = [];
 
       try {
         const res = await fetch('completion_status.json');
         if (res.ok) {
-          allStatusData = await res.json();
+          initialStatusData = await res.json();
         }
       } catch (e) {
         console.warn('Status file loading...');
       }
 
-      // Merge real-time completions from LocalStorage
-      try {
-        const localCompletions = JSON.parse(localStorage.getItem('kuchen_completed_reviews') || '{}');
-        allStatusData.forEach(item => {
+      async function loadAndMergeData() {
+        currentStatusData = JSON.parse(JSON.stringify(initialStatusData));
+
+        let globalCloudCompletions = {};
+
+        // 1. Fetch Global Multi-user Completions from Cloudflare Worker Server
+        try {
+          const gRes = await fetch('/api/get-status');
+          if (gRes.ok) {
+            globalCloudCompletions = await gRes.json();
+          }
+        } catch (e) {}
+
+        // 2. Fetch Local Completions from LocalStorage fallback
+        let localCompletions = {};
+        try {
+          localCompletions = JSON.parse(localStorage.getItem('kuchen_completed_reviews') || '{}');
+        } catch (err) {}
+
+        const mergedCompletions = { ...localCompletions, ...globalCloudCompletions };
+
+        currentStatusData.forEach(item => {
           const pid = item.productId || item.stt;
-          if (localCompletions[pid]) {
-            const loc = localCompletions[pid];
+          if (mergedCompletions[pid]) {
+            const loc = mergedCompletions[pid];
             item.status = 'HOÀN THÀNH';
             item.statusClass = 'completed';
             item.reviewContent = loc.reviewContent;
@@ -300,18 +347,21 @@
             item.completedAt = loc.completedAt;
           }
         });
-      } catch (err) {
-        console.warn('Error reading local completions:', err);
+
+        renderTable(currentStatusData);
       }
 
       // Populate Staff Filter
-      const staffNames = Array.from(new Set(allStatusData.map(d => d.assignee)));
-      staffNames.forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name;
-        opt.textContent = `👤 ${name}`;
-        staffFilter.appendChild(opt);
-      });
+      function populateStaffFilter() {
+        staffFilter.innerHTML = '<option value="ALL">-- Tất cả nhân viên (13 người) --</option>';
+        const staffNames = Array.from(new Set(initialStatusData.map(d => d.assignee)));
+        staffNames.forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = `👤 ${name}`;
+          staffFilter.appendChild(opt);
+        });
+      }
 
       function renderTable(data) {
         statusTableBody.innerHTML = '';
@@ -354,7 +404,8 @@
         });
       }
 
-      renderTable(allStatusData);
+      populateStaffFilter();
+      await loadAndMergeData();
 
       // Filter events
       staffFilter.addEventListener('change', filterData);
@@ -364,7 +415,7 @@
         const staff = staffFilter.value;
         const query = searchInput.value.toLowerCase().trim();
 
-        const filtered = allStatusData.filter(d => {
+        const filtered = currentStatusData.filter(d => {
           const matchStaff = staff === 'ALL' || d.assignee === staff;
           const matchQuery = !query || d.name.toLowerCase().includes(query) || (d.sku && d.sku.toLowerCase().includes(query));
           return matchStaff && matchQuery;
@@ -372,6 +423,43 @@
 
         renderTable(filtered);
       }
+
+      // Reset Button Handler with Global Sync & Password Verification: nxl2010@
+      btnResetDashboard.addEventListener('click', async () => {
+        const pass = prompt('🔐 VUI LÒNG NHẬP MẬT KHẨU ĐỂ RESET BẢNG ĐÁNH GIÁ CHUNG:');
+        
+        if (pass === null) return; // User cancelled
+
+        if (pass === 'nxl2010@') {
+          // Clear LocalStorage completion tracking
+          localStorage.removeItem('kuchen_completed_reviews');
+
+          // Reset Global Worker Status Database
+          try {
+            await fetch('/api/reset-status', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ password: 'nxl2010@' })
+            });
+          } catch (e) {}
+
+          // Reset all status to initial pending state
+          initialStatusData.forEach(item => {
+            item.status = 'CHƯA ĐÁNH GIÁ';
+            item.statusClass = 'pending';
+            item.reviewContent = 'Chưa có đánh giá';
+            item.reviewerName = '-';
+            item.reviewerPhone = '-';
+            item.rating = 0;
+            item.completedAt = '-';
+          });
+
+          await loadAndMergeData();
+          alert('🎉 ĐÃ RESET TOÀN BỘ BẢNG ĐÁNH GIÁ TOÀN CẦU CHUNG CHO 13 NHÂN VIÊN VỀ 0% THÀNH CÔNG!');
+        } else {
+          alert('❌ Mật khẩu không chính xác! Không thể Reset dữ liệu.');
+        }
+      });
     });
   </script>
 </body>

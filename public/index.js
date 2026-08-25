@@ -1,8 +1,80 @@
+// In-memory global completion store for all 13 staff members
+let globalCompletedReviews = {};
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // Proxy endpoint to bypass Cross-Origin WAF blocking on kuchen.vn
+    // Handle CORS Preflight OPTIONS
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type'
+        }
+      });
+    }
+
+    // 1. GET Global Completion Status for Dashboard
+    if (url.pathname === '/api/get-status') {
+      return new Response(JSON.stringify(globalCompletedReviews), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
+
+    // 2. POST Record New Review Completion from any staff member
+    if (url.pathname === '/api/update-status' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        if (body && body.productId) {
+          globalCompletedReviews[body.productId] = body;
+        }
+        return new Response(JSON.stringify({ success: true, count: Object.keys(globalCompletedReviews).length }), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        });
+      } catch (e) {
+        return new Response(JSON.stringify({ success: false, error: e.message }), { status: 400 });
+      }
+    }
+
+    // 3. POST Reset Global Status (Password: nxl2010@)
+    if (url.pathname === '/api/reset-status' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        if (body && body.password === 'nxl2010@') {
+          globalCompletedReviews = {};
+          return new Response(JSON.stringify({ success: true, message: 'Đã Reset bảng đánh giá toàn bộ 13 nhân viên!' }), {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            }
+          });
+        } else {
+          return new Response(JSON.stringify({ success: false, message: 'Sai mật khẩu xác nhận!' }), {
+            status: 403,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            }
+          });
+        }
+      } catch (e) {
+        return new Response(JSON.stringify({ success: false, error: e.message }), { status: 400 });
+      }
+    }
+
+    // 4. Proxy endpoint to bypass Cross-Origin WAF blocking on kuchen.vn
     if (url.pathname === '/api/proxy-submit' && request.method === 'POST') {
       try {
         const formData = await request.formData();
@@ -41,8 +113,7 @@ export default {
           status: 200,
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS'
+            'Access-Control-Allow-Origin': '*'
           }
         });
       } catch (err) {

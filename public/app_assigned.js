@@ -57,28 +57,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     logTerminal.scrollTop = logTerminal.scrollHeight;
   }
 
-  // Save completion status to localStorage for real-time Dashboard sync
+  // Save completion status locally AND sync to Global Worker Database
   function recordCompletion(productId, data) {
+    const payload = {
+      productId: productId,
+      stt: data.stt || productId,
+      name: data.name || 'Sản phẩm Kuchen',
+      url: data.url || '',
+      assignee: data.assignee || staffSelect.value || 'Người dùng',
+      status: 'HOÀN THÀNH',
+      statusClass: 'completed',
+      reviewContent: data.comment,
+      reviewerName: data.author,
+      reviewerPhone: data.phone,
+      rating: data.rating || 5,
+      completedAt: new Date().toLocaleString('vi-VN')
+    };
+
+    // 1. Save to LocalStorage
     try {
       const existing = JSON.parse(localStorage.getItem('kuchen_completed_reviews') || '{}');
-      existing[productId] = {
-        productId: productId,
-        stt: data.stt || productId,
-        name: data.name || 'Sản phẩm Kuchen',
-        url: data.url || '',
-        assignee: data.assignee || staffSelect.value || 'Người dùng',
-        status: 'HOÀN THÀNH',
-        statusClass: 'completed',
-        reviewContent: data.comment,
-        reviewerName: data.author,
-        reviewerPhone: data.phone,
-        rating: data.rating || 5,
-        completedAt: new Date().toLocaleString('vi-VN')
-      };
+      existing[productId] = payload;
       localStorage.setItem('kuchen_completed_reviews', JSON.stringify(existing));
-    } catch (e) {
-      console.warn('LocalStorage save error:', e);
-    }
+    } catch (e) {}
+
+    // 2. Sync to Global Worker Server for all 13 staff members
+    try {
+      fetch('/api/update-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => {});
+    } catch (e) {}
   }
 
   // Enhanced submission helper that captures exact HTTP response from Kuchen server
@@ -249,7 +259,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     charCount.style.color = len >= 10 ? '#34d399' : '#f87171';
   });
 
-  // Single Submission Handler with Server Error Reporting
+  // Single Submission Handler with Server Error Reporting & Global Cloud Sync
   realForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -289,7 +299,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnSubmitSingle.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi Đánh Giá Ngay';
 
     if (result.success) {
-      // Record completion state locally for Dashboard sync
+      // Record completion state locally AND on Global Worker Database
       recordCompletion(pid, {
         stt: foundProduct ? foundProduct.stt : pid,
         name: foundProduct ? foundProduct.name : 'Sản phẩm Kuchen',
@@ -339,7 +349,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Add 1 blank row by default
   addBatchRow();
 
-  // Batch Execution with Real-Time Server Response Logging
+  // Batch Execution with Real-Time Server Response Logging & Global Cloud Sync
   btnStartBatch.addEventListener('click', async () => {
     const rows = Array.from(batchTableBody.children);
     if (rows.length === 0) {

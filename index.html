@@ -407,27 +407,6 @@
     .progress-bar-bg { width: 100%; height: 10px; background: rgba(0, 0, 0, 0.1); border-radius: 5px; overflow: hidden; }
     .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--success)); transition: width 0.3s ease; }
 
-    .templates-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-      margin-top: 16px;
-    }
-
-    .template-card {
-      background: rgba(0, 0, 0, 0.02);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .template-stars { color: var(--accent-gold); font-size: 14px; }
-    .template-text { font-size: 13px; line-height: 1.5; color: var(--text-main); }
-
     .log-card { padding: 16px; }
     .log-header { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
     .log-title { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
@@ -487,8 +466,8 @@
         <div class="logo-group">
           <div class="logo-icon"><i class="fa-solid fa-sun"></i></div>
           <div>
-            <h1>Kuchen Review Automation (Giao Diện Sáng)</h1>
-            <p class="subtitle">Giao diện sáng trang nhã • Chọn người phụ trách • Tự động gửi đánh giá</p>
+            <h1>Kuchen Review Automation</h1>
+            <p class="subtitle">Tự động gửi đánh giá sản phẩm Kuchen • Ô nhập trống không điền trước</p>
           </div>
         </div>
         
@@ -543,16 +522,16 @@
         <div class="product-info-box">
           <div class="form-group">
             <label for="productUrlInput"><i class="fa-solid fa-link"></i> URL Sản Phẩm Targets</label>
-            <input type="text" id="productUrlInput" value="https://kuchen.vn/san-pham/noi-com-thong-minh-ku-rcdp3003/">
+            <input type="text" id="productUrlInput" value="" placeholder="Dán hoặc chọn đường dẫn URL sản phẩm...">
           </div>
           <div class="form-group">
             <label for="productIdInput"><i class="fa-solid fa-key"></i> Product ID (comment_post_ID)</label>
-            <input type="text" id="productIdInput" value="9778" placeholder="Ví dụ: 9778">
+            <input type="text" id="productIdInput" value="" placeholder="Ví dụ: 9778">
           </div>
         </div>
       </section>
 
-      <!-- Navigation Tabs -->
+      <!-- Navigation Tabs (Only Single & Batch) -->
       <nav class="tabs-nav">
         <button class="tab-btn active" data-tab="tabSingle">
           <i class="fa-solid fa-paper-plane"></i> Gửi Đánh Giá Đơn
@@ -560,33 +539,30 @@
         <button class="tab-btn" data-tab="tabBatch">
           <i class="fa-solid fa-layer-group"></i> Gửi Hàng Loạt (Batch)
         </button>
-        <button class="tab-btn" data-tab="tabTemplates">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Mẫu Gợi Ý
-        </button>
       </nav>
 
       <!-- TAB 1: SINGLE REVIEW -->
       <section class="tab-content active" id="tabSingle">
         <div class="card">
           <form id="realForm" action="https://kuchen.vn/wp-comments-post.php" method="POST" target="hidden_submit_iframe">
-            <input type="hidden" name="comment_post_ID" id="real_comment_post_ID" value="9778">
+            <input type="hidden" name="comment_post_ID" id="real_comment_post_ID" value="">
             <input type="hidden" name="comment_parent" value="0">
             <input type="hidden" name="submit" value="Gửi đánh giá ngay">
 
             <div class="form-grid">
               <div class="form-group">
                 <label for="authorInput"><i class="fa-solid fa-user"></i> Họ và Tên người đánh giá <span class="req">*</span></label>
-                <input type="text" id="authorInput" name="author" required placeholder="Nhập họ tên" value="Nguyễn Văn Nam">
+                <input type="text" id="authorInput" name="author" required placeholder="Nhập họ và tên..." value="">
               </div>
 
               <div class="form-group">
                 <label for="phoneInput"><i class="fa-solid fa-phone"></i> Số Điện Thoại <span class="req">*</span></label>
-                <input type="tel" id="phoneInput" name="phone" required placeholder="Nhập SĐT" value="0912345678">
+                <input type="tel" id="phoneInput" name="phone" required placeholder="Nhập số điện thoại..." value="">
               </div>
 
               <div class="form-group">
                 <label for="emailInput"><i class="fa-solid fa-envelope"></i> Email (Không bắt buộc)</label>
-                <input type="email" id="emailInput" name="email" placeholder="nhapemail@gmail.com" value="nam.nguyen@gmail.com">
+                <input type="email" id="emailInput" name="email" placeholder="Nhập địa chỉ email (nếu có)..." value="">
               </div>
 
               <div class="form-group">
@@ -603,8 +579,8 @@
 
             <div class="form-group full-width" style="margin-top: 16px;">
               <label for="commentInput"><i class="fa-solid fa-comment-dots"></i> Nội Dung Đánh Giá <span class="req">* (Tối thiểu 10 ký tự)</span></label>
-              <textarea id="commentInput" name="comment" rows="4" required placeholder="Nội dung đánh giá...">Nồi cơm điện KUCHEN KU RCDP3003 nấu cơm rất dẻo và giữ ấm được cả ngày mà không bị khô. Rất hài lòng!</textarea>
-              <div class="char-count" id="charCount">110 ký tự (Hợp lệ)</div>
+              <textarea id="commentInput" name="comment" rows="4" required placeholder="Mời bạn nhập nhận xét chi tiết về sản phẩm..."></textarea>
+              <div class="char-count" id="charCount">0 ký tự (Tối thiểu 10)</div>
             </div>
 
             <div class="form-actions">
@@ -625,8 +601,7 @@
               <p class="subtitle">Tự động gửi đánh giá với giãn cách thời gian chống Spam (Random Delay)</p>
             </div>
             <div style="display: flex; gap: 8px;">
-              <button class="btn btn-secondary" id="btnAddRow"><i class="fa-solid fa-plus"></i> Thêm Hàng</button>
-              <button class="btn btn-secondary" id="btnLoadSampleBatch"><i class="fa-solid fa-wand-magic"></i> Nạp Dữ Liệu Mẫu</button>
+              <button class="btn btn-secondary" id="btnAddRow"><i class="fa-solid fa-plus"></i> Thêm Hàng Mới</button>
             </div>
           </div>
 
@@ -677,14 +652,6 @@
         </div>
       </section>
 
-      <!-- TAB 3: TEMPLATES -->
-      <section class="tab-content" id="tabTemplates">
-        <div class="card">
-          <h3><i class="fa-solid fa-shapes"></i> Mẫu Đánh Giá Gợi Ý Sản Phẩm Kuchen</h3>
-          <div class="templates-grid" id="templatesGrid"></div>
-        </div>
-      </section>
-
       <!-- Log Terminal -->
       <section class="card log-card">
         <div class="log-header">
@@ -692,7 +659,7 @@
           <button class="btn btn-sm btn-outline" id="btnClearLog"><i class="fa-solid fa-trash"></i> Xóa Log</button>
         </div>
         <div class="log-terminal" id="logTerminal">
-          <div class="log-line info">[System] Khởi chạy ứng dụng thành công. Bảng Quản Lý Trạng Thái đã sẵn sàng!</div>
+          <div class="log-line info">[System] Ứng dụng sẵn sàng. Các ô nhập liệu đã để trống để điền mới!</div>
         </div>
       </section>
     </main>
@@ -701,7 +668,7 @@
     <iframe name="hidden_submit_iframe" id="hidden_submit_iframe"></iframe>
 
     <footer class="app-footer">
-      <p>Kuchen Review Automation &bull; Status Dashboard Integrated</p>
+      <p>Kuchen Review Automation &bull; Clean Input Mode</p>
     </footer>
   </div>
 

@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const batchTableBody = document.getElementById('batchTableBody');
   const btnAddRow = document.getElementById('btnAddRow');
-  const btnLoadSampleBatch = document.getElementById('btnLoadSampleBatch');
   const btnStartBatch = document.getElementById('btnStartBatch');
   const btnStopBatch = document.getElementById('btnStopBatch');
   const progressSection = document.getElementById('progressSection');
@@ -42,7 +41,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const progressPercent = document.getElementById('progressPercent');
   const progressBarFill = document.getElementById('progressBarFill');
 
-  const templatesGrid = document.getElementById('templatesGrid');
   const logTerminal = document.getElementById('logTerminal');
   const btnClearLog = document.getElementById('btnClearLog');
 
@@ -110,17 +108,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    filtered.forEach((p, idx) => {
+    // Default select prompt
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = `-- Chọn sản phẩm trong danh sách (${filtered.length} sản phẩm) --`;
+    excelProductSelect.appendChild(defaultOpt);
+
+    filtered.forEach((p) => {
       const opt = document.createElement('option');
       opt.value = p.url;
       opt.textContent = `[STT ${p.stt}] [${p.assignee}] ${p.name} (${p.sku || 'N/A'})`;
       excelProductSelect.appendChild(opt);
     });
-
-    // Auto set first product URL
-    if (filtered.length > 0) {
-      productUrlInput.value = filtered[0].url;
-    }
   }
 
   // Handle product select change
@@ -130,8 +129,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       productUrlInput.value = selectedUrl;
       const found = allProducts.find(p => p.url === selectedUrl);
       if (found) {
+        // Auto set Product ID if known
+        productIdInput.value = found.stt === 4 ? '9778' : found.stt;
+        realProductId.value = productIdInput.value;
         log(`[Sản Phẩm] Đã chọn: "[STT ${found.stt}] ${found.name}" (Người phụ trách: ${found.assignee})`, 'info');
       }
+    } else {
+      productUrlInput.value = '';
+      productIdInput.value = '';
+      realProductId.value = '';
     }
   });
 
@@ -213,10 +219,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // Single Submission
-  realForm.addEventListener('submit', () => {
+  realForm.addEventListener('submit', (e) => {
     realProductId.value = productIdInput.value.trim();
-    const author = document.getElementById('authorInput').value;
-    log(`[Single Review] Đang gửi đánh giá của "${author}" cho Product ID ${realProductId.value}...`, 'info');
+    const author = document.getElementById('authorInput').value.trim();
+    const phone = document.getElementById('phoneInput').value.trim();
+    const comment = commentInput.value.trim();
+
+    if (!realProductId.value) {
+      e.preventDefault();
+      alert('Vui lòng chọn sản phẩm hoặc nhập Product ID!');
+      log('Vui lòng chọn sản phẩm hoặc nhập Product ID!', 'warning');
+      return;
+    }
+
+    if (comment.length < 10) {
+      e.preventDefault();
+      alert('Nội dung đánh giá phải có tối thiểu 10 ký tự!');
+      log('Nội dung đánh giá phải có tối thiểu 10 ký tự!', 'warning');
+      return;
+    }
+
+    log(`[Single Review] Đang gửi đánh giá của "${author}" (${phone}) cho Product ID ${realProductId.value}...`, 'info');
     
     btnSubmitSingle.disabled = true;
     btnSubmitSingle.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi...';
@@ -243,7 +266,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <option value="3" ${data.rating == 3 ? 'selected' : ''}>3 ★</option>
         </select>
       </td>
-      <td><input type="text" class="b-comment" value="${data.comment || ''}" placeholder="Nội dung"></td>
+      <td><input type="text" class="b-comment" value="${data.comment || ''}" placeholder="Nội dung đánh giá..."></td>
       <td><button class="btn btn-sm btn-danger del-btn"><i class="fa-solid fa-xmark"></i></button></td>
     `;
     tr.querySelector('.del-btn').addEventListener('click', () => { tr.remove(); reindex(); });
@@ -256,17 +279,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   btnAddRow.addEventListener('click', () => addBatchRow());
 
-  btnLoadSampleBatch.addEventListener('click', () => {
-    batchTableBody.innerHTML = '';
-    [
-      { author: 'Trần Văn Mạnh', phone: '0987112233', rating: 5, comment: 'Sản phẩm Kuchen dùng chất lượng tuyệt vời, nấu dẻo ngon.' },
-      { author: 'Nguyễn Thị Loan', phone: '0912445566', rating: 5, comment: 'Giao hàng nhanh, đóng gói cẩn thận, hàng chính hãng Kuchen.' },
-      { author: 'Phạm Đức Huy', phone: '0936778899', rating: 5, comment: 'Chất lượng xịn xò, giữ ấm lâu, thiết kế tinh tế sang trọng.' }
-    ].forEach(d => addBatchRow(d));
-    log('[Batch] Đã nạp 3 đánh giá mẫu.', 'info');
-  });
-
-  btnLoadSampleBatch.click();
+  // Add 1 blank row by default
+  addBatchRow();
 
   // Batch Execution in Browser
   btnStartBatch.addEventListener('click', async () => {
@@ -283,10 +297,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       const rating = r.querySelector('.b-rating').value;
       const comment = r.querySelector('.b-comment').value.trim();
       if (!author || !phone || !comment) {
-        log('Vui lòng điền đủ Họ tên, SĐT và Nội dung cho tất cả hàng!', 'warning');
+        log('Vui lòng điền đủ Họ tên, SĐT và Nội dung cho tất cả các hàng!', 'warning');
+        alert('Vui lòng điền đủ Họ tên, SĐT và Nội dung cho tất cả các hàng!');
         return;
       }
       items.push({ author, phone, rating, comment });
+    }
+
+    const pid = productIdInput.value.trim();
+    if (!pid) {
+      alert('Vui lòng chọn sản phẩm hoặc nhập Product ID!');
+      log('Vui lòng chọn sản phẩm hoặc nhập Product ID!', 'warning');
+      return;
     }
 
     isBatchRunning = true;
@@ -296,7 +318,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const minD = parseInt(document.getElementById('minDelayInput').value) || 3;
     const maxD = parseInt(document.getElementById('maxDelayInput').value) || 7;
-    const pid = productIdInput.value.trim();
 
     log(`[Batch] 🚀 Bắt đầu tiến trình gửi ${items.length} đánh giá trực tiếp từ Browser...`, 'info');
 
@@ -361,31 +382,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   btnStopBatch.addEventListener('click', () => {
     log('[Batch] ⏹️ Đã dừng gửi hàng loạt.', 'warning');
     stopBatch();
-  });
-
-  // Templates
-  const sampleTpls = [
-    { title: 'Khen cơm dẻo & hạt nở đều', rating: 5, text: 'Nồi cơm điện Kuchen KU RCDP3003 dùng tuyệt vời. Cơm chín dẻo mềm, giữ trọn vị thơm ngon.' },
-    { title: 'Thiết kế Đức sang trọng', rating: 5, text: 'Nồi thiết kế hiện đại, hoàn thiện tỉ mỉ. Lòng nồi dày dặn cầm rất chắc chắn.' },
-    { title: 'Giữ ấm lâu cả ngày', rating: 5, text: 'Chế độ giữ nhiệt tốt, nấu buổi sáng tới chiều tối cơm vẫn ấm nóng như mới nấu.' }
-  ];
-
-  sampleTpls.forEach(t => {
-    const div = document.createElement('div');
-    div.className = 'template-card';
-    div.innerHTML = `
-      <div>
-        <strong>${t.title}</strong>
-        <p class="template-text" style="margin-top:6px;">"${t.text}"</p>
-      </div>
-      <button class="btn btn-sm btn-outline btn-use-tpl"><i class="fa-solid fa-copy"></i> Dùng Mẫu Này</button>
-    `;
-    div.querySelector('.btn-use-tpl').addEventListener('click', () => {
-      commentInput.value = t.text;
-      commentInput.dispatchEvent(new Event('input'));
-      document.querySelector('[data-tab="tabSingle"]').click();
-      log(`[Template] Đã áp dụng mẫu: "${t.title}"`, 'info');
-    });
-    templatesGrid.appendChild(div);
   });
 });

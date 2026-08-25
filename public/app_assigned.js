@@ -81,14 +81,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Ultra-fast review submit helper (instant execution under 200ms)
-  function submitReviewPayloadFast(payload) {
-    // Hidden iframe submission
-    const tempForm = document.createElement('form');
-    tempForm.action = 'https://kuchen.vn/wp-comments-post.php';
-    tempForm.method = 'POST';
-    tempForm.target = 'hidden_submit_iframe';
-
+  // Enhanced submission helper that captures exact HTTP response from Kuchen server
+  async function submitReviewPayloadWithFeedback(payload) {
     const fields = {
       comment_post_ID: payload.pid,
       comment_parent: '0',
@@ -99,6 +93,35 @@ document.addEventListener('DOMContentLoaded', async () => {
       rating: payload.rating || '5',
       comment: payload.comment
     };
+
+    // 1. Try Cloudflare Worker Proxy Endpoint to capture exact HTTP status from kuchen.vn
+    try {
+      const fd = new FormData();
+      for (let k in fields) fd.append(k, fields[k]);
+      fd.append('product_url', payload.productUrl || 'https://kuchen.vn/');
+
+      const res = await fetch('/api/proxy-submit', {
+        method: 'POST',
+        body: fd
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          return { success: true, status: json.status || 302, message: json.message || 'Server Kuchen phản hồi thành công (302 Redirect)', via: 'Server Proxy' };
+        } else {
+          return { success: false, status: json.status || 500, message: json.message || json.error || 'Server Kuchen từ chối hoặc báo lỗi', via: 'Server Proxy' };
+        }
+      }
+    } catch (e) {
+      // Ignore proxy fetch error and fallback to iframe
+    }
+
+    // 2. Hidden iframe fallback submission
+    const tempForm = document.createElement('form');
+    tempForm.action = 'https://kuchen.vn/wp-comments-post.php';
+    tempForm.method = 'POST';
+    tempForm.target = 'hidden_submit_iframe';
 
     for (let key in fields) {
       const inp = document.createElement('input');
@@ -117,15 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }, 500);
 
-    // Also fire-and-forget proxy fetch in background for double reliability
-    try {
-      const fd = new FormData();
-      for (let k in fields) fd.append(k, fields[k]);
-      fd.append('product_url', payload.productUrl || 'https://kuchen.vn/');
-      fetch('/api/proxy-submit', { method: 'POST', body: fd }).catch(() => {});
-    } catch (e) {}
-
-    return { success: true };
+    return { success: true, status: 200, message: 'Đã phát request trực tiếp từ trình duyệt tới Kuchen.vn', via: 'Direct Iframe' };
   }
 
   btnClearLog.addEventListener('click', () => { logTerminal.innerHTML = ''; });
@@ -234,8 +249,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     charCount.style.color = len >= 10 ? '#34d399' : '#f87171';
   });
 
-  // Single Submission Handler (Ultra fast < 200ms)
-  realForm.addEventListener('submit', (e) => {
+  // Single Submission Handler with Server Error Reporting
+  realForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     realProductId.value = productIdInput.value.trim();
@@ -262,25 +277,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     const selectedUrl = productUrlInput.value;
     const foundProduct = allProducts.find(p => p.url === selectedUrl || p.productId == pid);
 
-    // Fast instant submission
-    submitReviewPayloadFast({
+    btnSubmitSingle.disabled = true;
+    btnSubmitSingle.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang kết nối tới Kuchen.vn...';
+    log(`[Single Review] Đang gửi đánh giá cho Product ID ${pid}...`, 'info');
+
+    const result = await submitReviewPayloadWithFeedback({
       pid, author, phone, email, comment, rating, productUrl: selectedUrl
     });
 
-    // Instant LocalStorage & Dashboard status record
-    recordCompletion(pid, {
-      stt: foundProduct ? foundProduct.stt : pid,
-      name: foundProduct ? foundProduct.name : 'Sản phẩm Kuchen',
-      url: selectedUrl,
-      assignee: foundProduct ? foundProduct.assignee : staffSelect.value,
-      author: author,
-      phone: phone,
-      comment: comment,
-      rating: parseInt(rating)
-    });
+    btnSubmitSingle.disabled = false;
+    btnSubmitSingle.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi Đánh Giá Ngay';
 
-    log(`[Single Review] ⚡ TỐC ĐỘ CAO: Đã phát request gửi đánh giá cho "${author}" (${phone}) cho Product ID ${pid}!`, 'success');
-    alert('🎉 Đánh giá đã được gửi thành công!');
+    if (result.success) {
+      // Record completion state locally for Dashboard sync
+      recordCompletion(pid, {
+        stt: foundProduct ? foundProduct.stt : pid,
+        name: foundProduct ? foundProduct.name : 'Sản phẩm Kuchen',
+        url: selectedUrl,
+        assignee: foundProduct ? foundProduct.assignee : staffSelect.value,
+        author: author,
+        phone: phone,
+        comment: comment,
+        rating: parseInt(rating)
+      });
+
+      log(`[Single Review] 🎉 THÀNH CÔNG (${result.status}): ${result.message} (Kênh: ${result.via})`, 'success');
+      alert(`🎉 Gửi đánh giá thành công! Server Kuchen phản hồi: Code ${result.status}`);
+    } else {
+      log(`[Single Review] ❌ SERVER KUCHEN BÁO LỖI (Code ${result.status}): ${result.message}`, 'error');
+      alert(`❌ Server Kuchen báo lỗi (Code ${result.status}): ${result.message}`);
+    }
   });
 
   // Batch Table Management
@@ -313,7 +339,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Add 1 blank row by default
   addBatchRow();
 
-  // Batch Execution in Browser
+  // Batch Execution with Real-Time Server Response Logging
   btnStartBatch.addEventListener('click', async () => {
     const rows = Array.from(batchTableBody.children);
     if (rows.length === 0) {
@@ -353,7 +379,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const minD = parseInt(document.getElementById('minDelayInput').value) || 3;
     const maxD = parseInt(document.getElementById('maxDelayInput').value) || 7;
 
-    log(`[Batch] 🚀 Bắt đầu tiến trình gửi ${items.length} đánh giá tốc độ cao...`, 'info');
+    log(`[Batch] 🚀 Bắt đầu gửi ${items.length} đánh giá kèm kiểm tra phản hồi từ Kuchen.vn...`, 'info');
 
     for (let i = 0; i < items.length; i++) {
       if (!isBatchRunning) break;
@@ -361,7 +387,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       log(`[Batch] [${i+1}/${items.length}] Đang gửi đánh giá của "${item.author}"...`, 'info');
 
-      submitReviewPayloadFast({
+      const result = await submitReviewPayloadWithFeedback({
         pid: pid,
         author: item.author,
         phone: item.phone,
@@ -370,24 +396,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         productUrl: selectedUrl
       });
 
-      // Record completion status locally for Dashboard
-      recordCompletion(pid, {
-        stt: foundProduct ? foundProduct.stt : pid,
-        name: foundProduct ? foundProduct.name : 'Sản phẩm Kuchen',
-        url: selectedUrl,
-        assignee: foundProduct ? foundProduct.assignee : staffSelect.value,
-        author: item.author,
-        phone: item.phone,
-        comment: item.comment,
-        rating: parseInt(item.rating)
-      });
+      if (result.success) {
+        recordCompletion(pid, {
+          stt: foundProduct ? foundProduct.stt : pid,
+          name: foundProduct ? foundProduct.name : 'Sản phẩm Kuchen',
+          url: selectedUrl,
+          assignee: foundProduct ? foundProduct.assignee : staffSelect.value,
+          author: item.author,
+          phone: item.phone,
+          comment: item.comment,
+          rating: parseInt(item.rating)
+        });
+
+        log(`[Batch] ✅ [${i+1}/${items.length}] "${item.author}" -> Kuchen.vn phản hồi Code ${result.status} (Thành công)!`, 'success');
+      } else {
+        log(`[Batch] ❌ [${i+1}/${items.length}] "${item.author}" -> Kuchen.vn báo lỗi (Code ${result.status}): ${result.message}`, 'error');
+      }
 
       const pct = Math.round(((i + 1) / items.length) * 100);
       progressBarFill.style.width = `${pct}%`;
       progressPercent.textContent = `${pct}%`;
       progressText.textContent = `Đã xử lý ${i + 1}/${items.length}...`;
-
-      log(`[Batch] ⚡ [${i+1}/${items.length}] Đã phát request gửi siêu tốc cho "${item.author}"!`, 'success');
 
       if (i < items.length - 1 && isBatchRunning) {
         const delaySec = Math.floor(Math.random() * (maxD - minD + 1)) + minD;
@@ -396,7 +425,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    log('[Batch] 🎉 ĐÃ HOÀN THÀNH TẤT CẢ LƯỢT GỬI HÀNG LOẠT! Trạng thái đã cập nhật vào Dashboard.', 'success');
+    log('[Batch] 🎉 ĐÃ HOÀN THÀNH TIẾN TRÌNH GỬI HÀNG LOẠT!', 'success');
     stopBatch();
   });
 

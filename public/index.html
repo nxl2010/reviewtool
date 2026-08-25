@@ -2,8 +2,8 @@
 <html lang="vi" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kuchen Review Tool - Giao Diện Sáng (Light Theme)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Kuchen Review Tool - Giao Diện Mobile & Light Theme Tối Ưu</title>
   <!-- Google Fonts & FontAwesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -66,7 +66,7 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      padding: 24px;
+      padding: 16px;
       transition: background 0.3s ease, color 0.3s ease;
     }
 
@@ -75,14 +75,14 @@
       max-width: 1050px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
     }
 
     .app-header {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: var(--radius-lg);
-      padding: 20px 28px;
+      padding: 18px 20px;
       box-shadow: var(--shadow-md);
     }
 
@@ -97,87 +97,76 @@
     .logo-group {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
 
     .logo-icon {
-      width: 48px;
-      height: 48px;
+      width: 44px;
+      height: 44px;
       background: linear-gradient(135deg, #f59e0b, #d97706);
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      font-size: 20px;
       color: #fff;
       box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
+      flex-shrink: 0;
     }
 
-    .app-header h1 { font-size: 22px; font-weight: 700; color: var(--text-main); }
-    .subtitle { font-size: 13px; color: var(--text-muted); }
+    .app-header h1 { font-size: 19px; font-weight: 700; color: var(--text-main); line-height: 1.3; }
+    .subtitle { font-size: 12px; color: var(--text-muted); }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      width: 100%;
+    }
+
+    @media (min-width: 640px) {
+      .header-actions { width: auto; }
     }
 
     .dashboard-link-btn {
+      flex: 1;
       background: linear-gradient(135deg, var(--success), var(--success-hover));
       color: #fff;
-      padding: 8px 16px;
+      padding: 10px 16px;
       border-radius: 20px;
       font-size: 13px;
       font-weight: 700;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+      min-height: 44px;
     }
 
     .theme-toggle-btn {
       background: rgba(0, 0, 0, 0.04);
       border: 1px solid var(--card-border);
       color: var(--text-main);
-      padding: 8px 14px;
+      padding: 10px 14px;
       border-radius: 20px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
-      transition: all 0.2s ease;
-    }
-
-    .theme-toggle-btn:hover { background: rgba(0, 0, 0, 0.08); }
-
-    .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      background: rgba(5, 150, 105, 0.1);
-      border: 1px solid rgba(5, 150, 105, 0.25);
-      border-radius: 20px;
-      font-size: 12px;
-      color: var(--success);
-      font-weight: 600;
-    }
-
-    .status-dot {
-      width: 8px; height: 8px;
-      background: var(--success);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--success);
+      min-height: 44px;
+      white-space: nowrap;
     }
 
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: var(--radius-lg);
-      padding: 24px;
+      padding: 20px;
       box-shadow: var(--shadow-md);
     }
 
@@ -186,15 +175,17 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       flex-wrap: wrap;
     }
 
     .card-header-title {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
+
+    .card-header-title h3 { font-size: 16px; }
 
     .accent-icon { color: var(--primary); font-size: 18px; }
 
@@ -202,36 +193,38 @@
       background: rgba(37, 99, 235, 0.05);
       border: 1px solid rgba(37, 99, 235, 0.15);
       border-radius: var(--radius-md);
-      padding: 16px;
-      margin-bottom: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
     }
 
     .staff-row {
       display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 10px;
     }
 
-    .staff-row .form-group {
-      flex: 1;
-      min-width: 250px;
+    @media (min-width: 640px) {
+      .staff-row { flex-direction: row; align-items: center; }
     }
 
     .product-info-box {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-      padding: 16px;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 14px;
       background: rgba(0, 0, 0, 0.02);
       border: 1px solid var(--card-border);
       border-radius: var(--radius-md);
     }
 
+    @media (min-width: 640px) {
+      .product-info-box { grid-template-columns: repeat(2, 1fr); }
+    }
+
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     label {
@@ -250,12 +243,15 @@
       background: var(--input-bg);
       border: 1px solid var(--input-border);
       border-radius: var(--radius-md);
-      padding: 12px 16px;
+      padding: 12px 14px;
       color: var(--text-main);
       font-family: inherit;
-      font-size: 14px;
+      font-size: 15px; /* 16px on mobile prevents auto zoom */
+      min-height: 46px;
       transition: all 0.2s ease;
     }
+
+    textarea { min-height: 100px; }
 
     input[readonly] {
       background: rgba(0, 0, 0, 0.04);
@@ -270,27 +266,26 @@
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
 
-    .tabs-nav { display: flex; gap: 10px; }
+    .tabs-nav { display: flex; gap: 8px; }
 
     .tab-btn {
       flex: 1;
-      padding: 14px;
+      padding: 12px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: var(--radius-md);
       color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
       box-shadow: var(--shadow-sm);
+      min-height: 46px;
       transition: all 0.2s ease;
     }
-
-    .tab-btn:hover { background: rgba(0, 0, 0, 0.02); color: var(--text-main); }
 
     .tab-btn.active {
       background: var(--primary);
@@ -304,8 +299,12 @@
 
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 640px) {
+      .form-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
     }
 
     .full-width { grid-column: 1 / -1; }
@@ -314,15 +313,17 @@
       display: flex;
       flex-direction: row-reverse;
       justify-content: flex-end;
-      gap: 4px;
+      gap: 6px;
+      padding: 4px 0;
     }
 
     .star-rating-selector input { display: none; }
     .star-rating-selector label {
-      font-size: 26px;
+      font-size: 32px;
       color: #cbd5e1;
       cursor: pointer;
       transition: color 0.15s ease;
+      padding: 0 4px;
     }
 
     .star-rating-selector label:hover,
@@ -334,100 +335,91 @@
     .char-count { font-size: 12px; color: var(--text-muted); text-align: right; margin-top: 4px; }
 
     .btn {
-      padding: 12px 24px;
+      padding: 12px 20px;
       border-radius: var(--radius-md);
       border: none;
       font-family: inherit;
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      min-height: 48px;
       transition: all 0.2s ease;
+      width: 100%;
+    }
+
+    @media (min-width: 640px) {
+      .btn { width: auto; }
     }
 
     .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-hover); }
-
     .btn-success { background: var(--success); color: #fff; }
-    .btn-success:hover { background: var(--success-hover); }
-
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-secondary { background: rgba(0, 0, 0, 0.05); color: var(--text-main); }
-    .btn-secondary:hover { background: rgba(0, 0, 0, 0.08); }
-
-    .btn-lg { padding: 14px 28px; font-size: 15px; }
-    .btn-sm { padding: 6px 12px; font-size: 12px; }
     .btn-outline { background: transparent; border: 1px solid var(--card-border); color: var(--text-muted); }
-    .btn-outline:hover { border-color: var(--text-muted); color: var(--text-main); }
 
-    .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
 
     .batch-header-row {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      gap: 12px;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
     }
 
-    .delay-settings-box {
-      background: rgba(0, 0, 0, 0.02);
-      border: 1px solid var(--card-border);
-      padding: 12px 16px;
-      border-radius: var(--radius-md);
-      margin-bottom: 16px;
+    @media (min-width: 640px) {
+      .batch-header-row { flex-direction: row; justify-content: space-between; align-items: center; }
     }
 
-    .setting-item { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-    .range-inputs { display: flex; align-items: center; gap: 8px; }
-    .range-inputs input { width: 70px; text-align: center; }
-
-    .table-responsive { overflow-x: auto; margin-bottom: 16px; }
+    .table-responsive {
+      overflow-x: auto;
+      margin-bottom: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
 
     .batch-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
+      min-width: 550px;
     }
 
     .batch-table th, .batch-table td {
-      padding: 10px 12px;
+      padding: 10px 8px;
       border-bottom: 1px solid var(--card-border);
       text-align: left;
     }
 
-    .batch-table th { background: rgba(0, 0, 0, 0.03); color: var(--text-muted); font-weight: 700; }
-    .batch-table input, .batch-table select { padding: 6px 10px; font-size: 13px; }
+    .batch-table input, .batch-table select { padding: 8px; font-size: 13px; min-height: 38px; }
 
     .progress-section {
-      margin-top: 16px;
+      margin-top: 14px;
       background: rgba(0, 0, 0, 0.03);
-      padding: 14px;
+      padding: 12px;
       border-radius: var(--radius-md);
     }
 
-    .progress-info { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+    .progress-info { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
     .progress-bar-bg { width: 100%; height: 10px; background: rgba(0, 0, 0, 0.1); border-radius: 5px; overflow: hidden; }
     .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--success)); transition: width 0.3s ease; }
 
     .log-card { padding: 16px; }
-    .log-header { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-    .log-title { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .log-header { margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .log-title { font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 6px; }
 
     .log-terminal {
       background: #0f172a;
       border: 1px solid var(--card-border);
       border-radius: var(--radius-md);
-      padding: 14px;
-      height: 180px;
+      padding: 12px;
+      height: 160px;
       overflow-y: auto;
       font-family: 'Consolas', 'Courier New', monospace;
-      font-size: 12px;
-      line-height: 1.6;
+      font-size: 11px;
+      line-height: 1.5;
       display: flex;
       flex-direction: column;
       gap: 4px;
@@ -442,6 +434,11 @@
       position: relative;
       overflow: hidden;
       display: inline-block;
+      width: 100%;
+    }
+
+    @media (min-width: 640px) {
+      .excel-upload-btn-wrapper { width: auto; }
     }
 
     .excel-upload-btn-wrapper input[type=file] {
@@ -460,6 +457,9 @@
       border-radius: 6px;
       font-weight: 700;
       font-size: 12px;
+      display: inline-block;
+      width: 100%;
+      text-align: center;
     }
 
     #hidden_submit_iframe { display: none; }
@@ -474,16 +474,16 @@
           <div class="logo-icon"><i class="fa-solid fa-sun"></i></div>
           <div>
             <h1>Kuchen Review Automation</h1>
-            <p class="subtitle">Tự động gửi đánh giá sản phẩm Kuchen • Đã khóa URL & Product ID chuẩn xác</p>
+            <p class="subtitle">Tự động gửi đánh giá • Tối ưu chuẩn Mobile & Máy tính</p>
           </div>
         </div>
         
         <div class="header-actions">
           <a href="dashboard.html" class="dashboard-link-btn">
-            <i class="fa-solid fa-chart-pie"></i> Bảng Trạng Thái Hoàn Thành
+            <i class="fa-solid fa-chart-pie"></i> Bảng Trạng Thái
           </a>
           <button class="theme-toggle-btn" id="themeToggleBtn">
-            <i class="fa-solid fa-moon"></i> <span>Đổi sang Giao diện Tối</span>
+            <i class="fa-solid fa-moon"></i> <span>Tối</span>
           </button>
         </div>
       </div>
@@ -495,10 +495,10 @@
         <div class="card-header">
           <div class="card-header-title">
             <i class="fa-solid fa-user-check accent-icon"></i>
-            <h3>Chọn Tên Người Phụ Trách (Nhân Viên)</h3>
+            <h3>Chọn Tên Người Phụ Trách</h3>
           </div>
           <div class="excel-upload-btn-wrapper">
-            <button class="btn btn-sm btn-outline"><i class="fa-solid fa-file-excel"></i> Upload File Phân Công Khác</button>
+            <button class="btn btn-sm btn-outline"><i class="fa-solid fa-file-excel"></i> Upload File Phân Công</button>
             <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv">
           </div>
         </div>
@@ -519,7 +519,7 @@
         </div>
 
         <!-- Product Selector filtered by Staff -->
-        <div class="form-group" style="margin-bottom: 16px;">
+        <div class="form-group" style="margin-bottom: 14px;">
           <label for="excelProductSelect"><i class="fa-solid fa-boxes-stacked"></i> Danh sách sản phẩm được phân công cho bạn:</label>
           <select id="excelProductSelect">
             <option value="">-- Đang tải danh sách sản phẩm... --</option>
@@ -528,17 +528,17 @@
 
         <div class="product-info-box">
           <div class="form-group">
-            <label for="productUrlInput"><i class="fa-solid fa-link"></i> URL Sản Phẩm Targets (Tự động khóa <i class="fa-solid fa-lock" style="font-size:10px;"></i>)</label>
-            <input type="text" id="productUrlInput" value="" readonly placeholder="Tự động điền theo sản phẩm bạn chọn...">
+            <label for="productUrlInput"><i class="fa-solid fa-link"></i> URL Sản Phẩm Targets (🔒 Đã khóa)</label>
+            <input type="text" id="productUrlInput" value="" readonly placeholder="Tự động điền theo sản phẩm chọn...">
           </div>
           <div class="form-group">
-            <label for="productIdInput"><i class="fa-solid fa-key"></i> WooCommerce Product ID (Tự động khóa <i class="fa-solid fa-lock" style="font-size:10px;"></i>)</label>
+            <label for="productIdInput"><i class="fa-solid fa-key"></i> Product ID (🔒 Đã khóa)</label>
             <input type="text" id="productIdInput" value="" readonly placeholder="Tự động lấy ID thật...">
           </div>
         </div>
       </section>
 
-      <!-- Navigation Tabs (Only Single & Batch) -->
+      <!-- Navigation Tabs -->
       <nav class="tabs-nav">
         <button class="tab-btn active" data-tab="tabSingle">
           <i class="fa-solid fa-paper-plane"></i> Gửi Đánh Giá Đơn
@@ -584,7 +584,7 @@
               </div>
             </div>
 
-            <div class="form-group full-width" style="margin-top: 16px;">
+            <div class="form-group full-width" style="margin-top: 14px;">
               <label for="commentInput"><i class="fa-solid fa-comment-dots"></i> Nội Dung Đánh Giá <span class="req">* (Tối thiểu 10 ký tự)</span></label>
               <textarea id="commentInput" name="comment" rows="4" required placeholder="Mời bạn nhập nhận xét chi tiết về sản phẩm..."></textarea>
               <div class="char-count" id="charCount">0 ký tự (Tối thiểu 10)</div>
@@ -604,21 +604,11 @@
         <div class="card">
           <div class="batch-header-row">
             <div>
-              <h3><i class="fa-solid fa-list-check"></i> Quản Lý Danh Sách Đánh Giá Hàng Loạt</h3>
-              <p class="subtitle">Tự động gửi đánh giá với giãn cách thời gian chống Spam (Random Delay)</p>
+              <h3><i class="fa-solid fa-list-check"></i> Quản Lý Gửi Hàng Loạt</h3>
+              <p class="subtitle">Tự động gửi đánh giá với giãn cách chống Spam (Random Delay)</p>
             </div>
-            <div style="display: flex; gap: 8px;">
+            <div>
               <button class="btn btn-secondary" id="btnAddRow"><i class="fa-solid fa-plus"></i> Thêm Hàng Mới</button>
-            </div>
-          </div>
-
-          <div class="delay-settings-box">
-            <div class="setting-item">
-              <label><i class="fa-solid fa-clock"></i> Giãn cách ngẫu nhiên (Delay):</label>
-              <div class="range-inputs">
-                <input type="number" id="minDelayInput" value="3" min="1"> giây đến
-                <input type="number" id="maxDelayInput" value="7" min="2"> giây
-              </div>
             </div>
           </div>
 
@@ -626,12 +616,12 @@
             <table class="batch-table">
               <thead>
                 <tr>
-                  <th style="width: 50px;">STT</th>
-                  <th style="width: 170px;">Họ tên</th>
-                  <th style="width: 130px;">SĐT</th>
-                  <th style="width: 90px;">Số Sao</th>
+                  <th style="width: 40px;">STT</th>
+                  <th style="width: 140px;">Họ tên</th>
+                  <th style="width: 120px;">SĐT</th>
+                  <th style="width: 80px;">Số Sao</th>
                   <th>Nội Dung</th>
-                  <th style="width: 60px;">Xóa</th>
+                  <th style="width: 50px;">Xóa</th>
                 </tr>
               </thead>
               <tbody id="batchTableBody"></tbody>
@@ -662,21 +652,17 @@
       <!-- Log Terminal -->
       <section class="card log-card">
         <div class="log-header">
-          <div class="log-title"><i class="fa-solid fa-terminal"></i> Nhật Ký Hoạt Động (Browser Logs)</div>
-          <button class="btn btn-sm btn-outline" id="btnClearLog"><i class="fa-solid fa-trash"></i> Xóa Log</button>
+          <div class="log-title"><i class="fa-solid fa-terminal"></i> Nhật Ký Hoạt Động</div>
+          <button class="btn btn-sm btn-outline" id="btnClearLog" style="width:auto; min-height:36px;"><i class="fa-solid fa-trash"></i> Xóa Log</button>
         </div>
         <div class="log-terminal" id="logTerminal">
-          <div class="log-line info">[System] Đã khóa các ô URL và Product ID. Vui lòng chọn sản phẩm trong Menu.</div>
+          <div class="log-line info">[System] Ứng dụng đã tối ưu 100% giao diện Mobile & Máy tính. Sẵn sàng!</div>
         </div>
       </section>
     </main>
 
     <!-- Hidden Iframe Target -->
     <iframe name="hidden_submit_iframe" id="hidden_submit_iframe"></iframe>
-
-    <footer class="app-footer">
-      <p>Kuchen Review Automation &bull; Locked Readonly Mode</p>
-    </footer>
   </div>
 
   <script src="app_assigned.js"></script>
@@ -690,10 +676,10 @@
       const currentTheme = htmlEl.getAttribute('data-theme');
       if (currentTheme === 'light') {
         htmlEl.setAttribute('data-theme', 'dark');
-        themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i> <span>Đổi sang Giao diện Sáng</span>';
+        themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i> <span>Sáng</span>';
       } else {
         htmlEl.setAttribute('data-theme', 'light');
-        themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i> <span>Đổi sang Giao diện Tối</span>';
+        themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i> <span>Tối</span>';
       }
     });
   </script>

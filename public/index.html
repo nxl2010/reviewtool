@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kuchen Review Tool - Giao Diện Sáng (Light Theme)</title>
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- SheetJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      /* Light Theme (Default) */
+      --bg-dark: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #059669;
+      --success-hover: #047857;
+      --danger: #dc2626;
+      --accent-gold: #d97706;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+
+    [data-theme="dark"] {
+      --bg-dark: #0b0f19;
+      --card-bg: rgba(23, 32, 54, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --success-hover: #059669;
+      --danger: #ef4444;
+      --accent-gold: #f59e0b;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --input-bg: rgba(15, 23, 42, 0.9);
+      --input-border: rgba(255, 255, 255, 0.12);
+      --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.37);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.06) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(5, 150, 105, 0.06) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 1050px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .app-header {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 20px 28px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
+    }
+
+    .app-header h1 { font-size: 22px; font-weight: 700; color: var(--text-main); }
+    .subtitle { font-size: 13px; color: var(--text-muted); }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .theme-toggle-btn {
+      background: rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle-btn:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(5, 150, 105, 0.1);
+      border: 1px solid rgba(5, 150, 105, 0.25);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .card-header-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .accent-icon { color: var(--primary); font-size: 18px; }
+
+    .staff-selector-box {
+      background: rgba(37, 99, 235, 0.05);
+      border: 1px solid rgba(37, 99, 235, 0.15);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .staff-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .staff-row .form-group {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .product-info-box {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .req { color: var(--danger); }
+
+    input, textarea, select {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .tabs-nav { display: flex; gap: 10px; }
+
+    .tab-btn {
+      flex: 1;
+      padding: 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover { background: rgba(0, 0, 0, 0.02); color: var(--text-main); }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .full-width { grid-column: 1 / -1; }
+
+    .star-rating-selector {
+      display: flex;
+      flex-direction: row-reverse;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+
+    .star-rating-selector input { display: none; }
+    .star-rating-selector label {
+      font-size: 26px;
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: color 0.15s ease;
+    }
+
+    .star-rating-selector label:hover,
+    .star-rating-selector label:hover ~ label,
+    .star-rating-selector input:checked ~ label {
+      color: var(--accent-gold);
+    }
+
+    .char-count { font-size: 12px; color: var(--text-muted); text-align: right; margin-top: 4px; }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: var(--radius-md);
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: var(--success-hover); }
+
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-secondary { background: rgba(0, 0, 0, 0.05); color: var(--text-main); }
+    .btn-secondary:hover { background: rgba(0, 0, 0, 0.08); }
+
+    .btn-lg { padding: 14px 28px; font-size: 15px; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-outline { background: transparent; border: 1px solid var(--card-border); color: var(--text-muted); }
+    .btn-outline:hover { border-color: var(--text-muted); color: var(--text-main); }
+
+    .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
+
+    .batch-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .delay-settings-box {
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid var(--card-border);
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+    }
+
+    .setting-item { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .range-inputs { display: flex; align-items: center; gap: 8px; }
+    .range-inputs input { width: 70px; text-align: center; }
+
+    .table-responsive { overflow-x: auto; margin-bottom: 16px; }
+
+    .batch-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .batch-table th, .batch-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--card-border);
+      text-align: left;
+    }
+
+    .batch-table th { background: rgba(0, 0, 0, 0.03); color: var(--text-muted); font-weight: 700; }
+    .batch-table input, .batch-table select { padding: 6px 10px; font-size: 13px; }
+
+    .progress-section {
+      margin-top: 16px;
+      background: rgba(0, 0, 0, 0.03);
+      padding: 14px;
+      border-radius: var(--radius-md);
+    }
+
+    .progress-info { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+    .progress-bar-bg { width: 100%; height: 10px; background: rgba(0, 0, 0, 0.1); border-radius: 5px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--success)); transition: width 0.3s ease; }
+
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .template-card {
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .template-stars { color: var(--accent-gold); font-size: 14px; }
+    .template-text { font-size: 13px; line-height: 1.5; color: var(--text-main); }
+
+    .log-card { padding: 16px; }
+    .log-header { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .log-title { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+
+    .log-terminal {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      height: 180px;
+      overflow-y: auto;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .log-line.info { color: #60a5fa; }
+    .log-line.success { color: #34d399; }
+    .log-line.warning { color: #fbbf24; }
+    .log-line.error { color: #f87171; }
+
+    .excel-upload-btn-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .excel-upload-btn-wrapper input[type=file] {
+      font-size: 100px;
+      position: absolute;
+      left: 0; top: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .badge-user {
+      background: rgba(217, 119, 6, 0.1);
+      border: 1px solid rgba(217, 119, 6, 0.3);
+      color: var(--accent-gold);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    #hidden_submit_iframe { display: none; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo-group">
+          <div class="logo-icon"><i class="fa-solid fa-sun"></i></div>
+          <div>
+            <h1>Kuchen Review Automation (Giao Diện Sáng)</h1>
+            <p class="subtitle">Giao diện sáng trang nhã • Chọn người phụ trách • Tự động gửi đánh giá</p>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <button class="theme-toggle-btn" id="themeToggleBtn">
+            <i class="fa-solid fa-moon"></i> <span>Đổi sang Giao diện Tối</span>
+          </button>
+          <div class="status-badge">
+            <span class="status-dot"></span> Light Mode Ready
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <section class="card">
+        <div class="card-header">
+          <div class="card-header-title">
+            <i class="fa-solid fa-user-check accent-icon"></i>
+            <h3>Chọn Tên Người Phụ Trách (Nhân Viên)</h3>
+          </div>
+          <div class="excel-upload-btn-wrapper">
+            <button class="btn btn-sm btn-outline"><i class="fa-solid fa-file-excel"></i> Upload File Phân Công Khác</button>
+            <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv">
+          </div>
+        </div>
+
+        <!-- Staff Selector -->
+        <div class="staff-selector-box">
+          <div class="staff-row">
+            <div class="form-group">
+              <label for="staffSelect"><i class="fa-solid fa-user"></i> Bạn là ai? (Chọn tên người phụ trách):</label>
+              <select id="staffSelect">
+                <option value="ALL">-- Tất cả sản phẩm (128 sản phẩm) --</option>
+              </select>
+            </div>
+            <div style="display: flex; align-items: flex-end;">
+              <span class="badge-user" id="staffProductCountBadge">Đã giao: 128 sản phẩm</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Selector filtered by Staff -->
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="excelProductSelect"><i class="fa-solid fa-boxes-stacked"></i> Danh sách sản phẩm được phân công cho bạn:</label>
+          <select id="excelProductSelect">
+            <option value="">-- Đang tải danh sách sản phẩm... --</option>
+          </select>
+        </div>
+
+        <div class="product-info-box">
+          <div class="form-group">
+            <label for="productUrlInput"><i class="fa-solid fa-link"></i> URL Sản Phẩm Targets</label>
+            <input type="text" id="productUrlInput" value="https://kuchen.vn/san-pham/noi-com-thong-minh-ku-rcdp3003/">
+          </div>
+          <div class="form-group">
+            <label for="productIdInput"><i class="fa-solid fa-key"></i> Product ID (comment_post_ID)</label>
+            <input type="text" id="productIdInput" value="9778" placeholder="Ví dụ: 9778">
+          </div>
+        </div>
+      </section>
+
+      <!-- Navigation Tabs -->
+      <nav class="tabs-nav">
+        <button class="tab-btn active" data-tab="tabSingle">
+          <i class="fa-solid fa-paper-plane"></i> Gửi Đánh Giá Đơn
+        </button>
+        <button class="tab-btn" data-tab="tabBatch">
+          <i class="fa-solid fa-layer-group"></i> Gửi Hàng Loạt (Batch)
+        </button>
+        <button class="tab-btn" data-tab="tabTemplates">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Mẫu Gợi Ý
+        </button>
+      </nav>
+
+      <!-- TAB 1: SINGLE REVIEW -->
+      <section class="tab-content active" id="tabSingle">
+        <div class="card">
+          <form id="realForm" action="https://kuchen.vn/wp-comments-post.php" method="POST" target="hidden_submit_iframe">
+            <input type="hidden" name="comment_post_ID" id="real_comment_post_ID" value="9778">
+            <input type="hidden" name="comment_parent" value="0">
+            <input type="hidden" name="submit" value="Gửi đánh giá ngay">
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="authorInput"><i class="fa-solid fa-user"></i> Họ và Tên người đánh giá <span class="req">*</span></label>
+                <input type="text" id="authorInput" name="author" required placeholder="Nhập họ tên" value="Nguyễn Văn Nam">
+              </div>
+
+              <div class="form-group">
+                <label for="phoneInput"><i class="fa-solid fa-phone"></i> Số Điện Thoại <span class="req">*</span></label>
+                <input type="tel" id="phoneInput" name="phone" required placeholder="Nhập SĐT" value="0912345678">
+              </div>
+
+              <div class="form-group">
+                <label for="emailInput"><i class="fa-solid fa-envelope"></i> Email (Không bắt buộc)</label>
+                <input type="email" id="emailInput" name="email" placeholder="nhapemail@gmail.com" value="nam.nguyen@gmail.com">
+              </div>
+
+              <div class="form-group">
+                <label><i class="fa-solid fa-star"></i> Mức Đánh Giá</label>
+                <div class="star-rating-selector">
+                  <input type="radio" name="rating" id="star5" value="5" checked><label for="star5">★</label>
+                  <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
+                  <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
+                  <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
+                  <input type="radio" name="rating" id="star1" value="1"><label for="star1">★</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group full-width" style="margin-top: 16px;">
+              <label for="commentInput"><i class="fa-solid fa-comment-dots"></i> Nội Dung Đánh Giá <span class="req">* (Tối thiểu 10 ký tự)</span></label>
+              <textarea id="commentInput" name="comment" rows="4" required placeholder="Nội dung đánh giá...">Nồi cơm điện KUCHEN KU RCDP3003 nấu cơm rất dẻo và giữ ấm được cả ngày mà không bị khô. Rất hài lòng!</textarea>
+              <div class="char-count" id="charCount">110 ký tự (Hợp lệ)</div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" id="btnSubmitSingle" class="btn btn-success btn-lg">
+                <i class="fa-solid fa-paper-plane"></i> Gửi Đánh Giá Ngay
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- TAB 2: BATCH REVIEW -->
+      <section class="tab-content" id="tabBatch">
+        <div class="card">
+          <div class="batch-header-row">
+            <div>
+              <h3><i class="fa-solid fa-list-check"></i> Quản Lý Danh Sách Đánh Giá Hàng Loạt</h3>
+              <p class="subtitle">Tự động gửi đánh giá với giãn cách thời gian chống Spam (Random Delay)</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary" id="btnAddRow"><i class="fa-solid fa-plus"></i> Thêm Hàng</button>
+              <button class="btn btn-secondary" id="btnLoadSampleBatch"><i class="fa-solid fa-wand-magic"></i> Nạp Dữ Liệu Mẫu</button>
+            </div>
+          </div>
+
+          <div class="delay-settings-box">
+            <div class="setting-item">
+              <label><i class="fa-solid fa-clock"></i> Giãn cách ngẫu nhiên (Delay):</label>
+              <div class="range-inputs">
+                <input type="number" id="minDelayInput" value="3" min="1"> giây đến
+                <input type="number" id="maxDelayInput" value="7" min="2"> giây
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="batch-table">
+              <thead>
+                <tr>
+                  <th style="width: 50px;">STT</th>
+                  <th style="width: 170px;">Họ tên</th>
+                  <th style="width: 130px;">SĐT</th>
+                  <th style="width: 90px;">Số Sao</th>
+                  <th>Nội Dung</th>
+                  <th style="width: 60px;">Xóa</th>
+                </tr>
+              </thead>
+              <tbody id="batchTableBody"></tbody>
+            </table>
+          </div>
+
+          <div class="progress-section" id="progressSection" style="display: none;">
+            <div class="progress-info">
+              <span id="progressText">Đang xử lý 0/0...</span>
+              <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="progressBarFill"></div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button id="btnStartBatch" class="btn btn-primary btn-lg">
+              <i class="fa-solid fa-play"></i> Bắt Đầu Gửi Hàng Loạt
+            </button>
+            <button id="btnStopBatch" class="btn btn-danger btn-lg" style="display: none;">
+              <i class="fa-solid fa-stop"></i> Dừng Lại
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: TEMPLATES -->
+      <section class="tab-content" id="tabTemplates">
+        <div class="card">
+          <h3><i class="fa-solid fa-shapes"></i> Mẫu Đánh Giá Gợi Ý Sản Phẩm Kuchen</h3>
+          <div class="templates-grid" id="templatesGrid"></div>
+        </div>
+      </section>
+
+      <!-- Log Terminal -->
+      <section class="card log-card">
+        <div class="log-header">
+          <div class="log-title"><i class="fa-solid fa-terminal"></i> Nhật Ký Hoạt Động (Browser Logs)</div>
+          <button class="btn btn-sm btn-outline" id="btnClearLog"><i class="fa-solid fa-trash"></i> Xóa Log</button>
+        </div>
+        <div class="log-terminal" id="logTerminal">
+          <div class="log-line info">[System] Giao diện Sáng (Light Theme) đã được kích hoạt!</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Hidden Iframe Target -->
+    <iframe name="hidden_submit_iframe" id="hidden_submit_iframe"></iframe>
+
+    <footer class="app-footer">
+      <p>Kuchen Review Automation &bull; Light & Dark Theme Support</p>
+    </footer>
+  </div>
+
+  <script src="app_assigned.js"></script>
+
+  <script>
+    // Theme Toggle Handler
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const htmlEl = document.documentElement;
+
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = htmlEl.getAttribute('data-theme');
+      if (currentTheme === 'light') {
+        htmlEl.setAttribute('data-theme', 'dark');
+        themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i> <span>Đổi sang Giao diện Sáng</span>';
+      } else {
+        htmlEl.setAttribute('data-theme', 'light');
+        themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i> <span>Đổi sang Giao diện Tối</span>';
+      }
+    });
+  </script>
+</body>
+</html>

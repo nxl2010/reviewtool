@@ -276,6 +276,59 @@
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
 
+    .template-box {
+      background: rgba(217, 119, 6, 0.05);
+      border: 1px solid rgba(217, 119, 6, 0.2);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .template-btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-template {
+      padding: 8px 14px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-template:hover {
+      background: rgba(217, 119, 6, 0.1);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+
+    .btn-toggle-template {
+      background: rgba(217, 119, 6, 0.1);
+      border: 1px solid rgba(217, 119, 6, 0.3);
+      color: var(--accent-gold);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-toggle-template:hover {
+      background: var(--accent-gold);
+      color: #ffffff;
+    }
+
     .tabs-nav { display: flex; gap: 8px; }
 
     .tab-btn {
@@ -615,21 +668,28 @@
               </div>
             </div>
 
-            <!-- Template Comment Selection Box (Hidden as per user request) -->
-            <div class="template-box" id="templateBox" style="display: none; margin-top: 14px;">
-              <label for="templateSelect"><i class="fa-solid fa-wand-magic-sparkles"></i> Chọn Mẫu Câu Đánh Giá Có Sẵn Cho Sản Phẩm Này:</label>
-              <select id="templateSelect" style="margin-top: 6px;">
-                <option value="">-- Bấm chọn mẫu câu có sẵn cho sản phẩm này --</option>
-              </select>
-              <div class="template-btns">
-                <button type="button" class="btn-template" id="btnChooseTemplate1"><i class="fa-solid fa-comment-dots"></i> Chọn Mẫu 1</button>
-                <button type="button" class="btn-template" id="btnChooseTemplate2"><i class="fa-solid fa-comment-dots"></i> Chọn Mẫu 2</button>
-              </div>
-            </div>
-
+            <!-- Comment Input Label with Template Suggestion Toggle Button -->
             <div class="form-group full-width" style="margin-top: 14px;">
-              <label for="commentInput"><i class="fa-solid fa-comment-dots"></i> Nội Dung Đánh Giá <span class="req">* (Tối thiểu 10 ký tự)</span></label>
-              <textarea id="commentInput" name="comment" rows="4" required placeholder="Mời bạn nhập nhận xét chi tiết về sản phẩm..."></textarea>
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
+                <label for="commentInput" style="margin: 0;"><i class="fa-solid fa-comment-dots"></i> Nội Dung Đánh Giá <span class="req">* (Tối thiểu 10 ký tự)</span></label>
+                <button type="button" class="btn-toggle-template" id="btnToggleTemplates">
+                  <i class="fa-solid fa-lightbulb"></i> 💡 Hiện Gợi Ý Mẫu Câu
+                </button>
+              </div>
+
+              <!-- Template Comment Selection Box (Toggleable via button) -->
+              <div class="template-box" id="templateBox" style="display: none;">
+                <label for="templateSelect"><i class="fa-solid fa-wand-magic-sparkles"></i> Gợi Ý Mẫu Câu Đánh Giá Cho Sản Phẩm Này:</label>
+                <select id="templateSelect" style="margin-top: 6px;">
+                  <option value="">-- Bấm chọn mẫu câu gợi ý có sẵn --</option>
+                </select>
+                <div class="template-btns">
+                  <button type="button" class="btn-template" id="btnChooseTemplate1"><i class="fa-solid fa-comment-dots"></i> Chọn Mẫu 1</button>
+                  <button type="button" class="btn-template" id="btnChooseTemplate2"><i class="fa-solid fa-comment-dots"></i> Chọn Mẫu 2</button>
+                </div>
+              </div>
+
+              <textarea id="commentInput" name="comment" rows="4" required placeholder="Mời bạn nhập nhận xét chi tiết về sản phẩm..." style="margin-top: 6px;"></textarea>
               <div class="char-count" id="charCount">0 ký tự (Tối thiểu 10)</div>
             </div>
 

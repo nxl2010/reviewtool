@@ -45,6 +45,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const productIdInput = document.getElementById('productIdInput');
   const realProductId = document.getElementById('real_comment_post_ID');
 
+  const btnToggleTemplates = document.getElementById('btnToggleTemplates');
+  const templateBox = document.getElementById('templateBox');
   const templateSelect = document.getElementById('templateSelect');
   const btnChooseTemplate1 = document.getElementById('btnChooseTemplate1');
   const btnChooseTemplate2 = document.getElementById('btnChooseTemplate2');
@@ -241,6 +243,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   if (btnDeptKyThuat) {
     btnDeptKyThuat.addEventListener('click', () => loadDepartmentData('kythuat'));
+  }
+
+  // Handle Toggle Template Suggestions Button
+  if (btnToggleTemplates && templateBox) {
+    btnToggleTemplates.addEventListener('click', () => {
+      if (templateBox.style.display === 'none' || !templateBox.style.display) {
+        templateBox.style.display = 'block';
+        btnToggleTemplates.innerHTML = '<i class="fa-solid fa-eye-slash"></i> 💡 Ẩn Gợi Ý Mẫu Câu';
+      } else {
+        templateBox.style.display = 'none';
+        btnToggleTemplates.innerHTML = '<i class="fa-solid fa-lightbulb"></i> 💡 Hiện Gợi Ý Mẫu Câu';
+      }
+    });
   }
 
   function populateStaffDropdown(sList) {

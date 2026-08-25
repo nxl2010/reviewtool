@@ -250,12 +250,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Update Template Options when a product is selected
+  // Update Template Options & Auto-fill Template 1 by default
   function updateTemplateOptions(foundProduct) {
     templateSelect.innerHTML = '';
     
     if (!foundProduct || (!foundProduct.template1 && !foundProduct.template2)) {
       templateSelect.innerHTML = '<option value="">-- Sản phẩm này chưa có mẫu câu --</option>';
+      commentInput.value = '';
+      updateCharCount();
       return;
     }
 
@@ -277,6 +279,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       opt2.textContent = `📝 Mẫu 2: "${foundProduct.template2.substring(0, 60)}..."`;
       templateSelect.appendChild(opt2);
     }
+
+    // Auto-fill Template 1 into commentInput by default as requested!
+    if (foundProduct.template1) {
+      commentInput.value = foundProduct.template1;
+      templateSelect.value = foundProduct.template1;
+      updateCharCount();
+    } else if (foundProduct.template2) {
+      commentInput.value = foundProduct.template2;
+      templateSelect.value = foundProduct.template2;
+      updateCharCount();
+    }
   }
 
   // Handle product select change
@@ -291,7 +304,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         realProductId.value = targetId;
         log(`[Sản Phẩm] Đã chọn: "${found.name}" (Real Product ID: ${targetId})`, 'info');
 
-        // Update Template Select Box for this product
+        // Update Template Select Box & Auto-fill Template 1 for this product
         updateTemplateOptions(found);
       }
     } else {
@@ -552,11 +565,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     stopBatch();
   });
 
-  // AUTO-PILOT EXECUTION FOR ALL 128 PRODUCTS
+  // AUTO-PILOT EXECUTION FOR ALL 128 PRODUCTS (PROTECTED WITH PASSWORD: nxl2010@)
   if (btnStartAutoPilot) {
     btnStartAutoPilot.addEventListener('click', async () => {
       if (allProducts.length === 0) {
         alert('Đang tải danh sách 128 sản phẩm, vui lòng thử lại sau 2 giây!');
+        return;
+      }
+
+      // Password verification prompt for Auto-Pilot
+      const pass = prompt('🔐 VUI LÒNG NHẬP MẬT KHẨU ĐỂ KÍCH HOẠT CHẾ ĐỘ AUTO-PILOT 128 SẢN PHẨM:');
+      if (pass === null) return; // User cancelled
+
+      if (pass !== 'nxl2010@') {
+        alert('❌ Mật khẩu không chính xác! Không thể kích hoạt chế độ Auto-Pilot.');
         return;
       }
 

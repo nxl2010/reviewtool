@@ -1,15 +1,18 @@
 {
   "name": "kuchen-review-tool",
   "version": "1.0.0",
-  "description": "Tool tự động thêm đánh giá sản phẩm Kuchen.vn",
+  "description": "Kuchen Review Automation Tool with Staff Assignment and Pure Frontend Support",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "cli": "node cli.js"
+    "deploy": "wrangler pages deploy public --project-name reviewtool"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.19.2",
+    "express": "^4.18.2",
     "xlsx": "^0.18.5"
   }
 }

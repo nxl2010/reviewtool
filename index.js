@@ -44,11 +44,11 @@ export default {
       });
     }
 
-    // 3. POST Toggle System-Wide Configuration (Admin Password: nxl2010@)
+    // 3. POST Toggle System-Wide Configuration (Admin Password: nxlzero@gmail.com)
     if (url.pathname === '/api/toggle-config' && request.method === 'POST') {
       try {
         const body = await request.json();
-        if (body && body.password === 'nxl2010@') {
+        if (body && body.password === 'nxlzero@gmail.com') {
           if (typeof body.autoFillTemplate1 === 'boolean') {
             globalConfig.autoFillTemplate1 = body.autoFillTemplate1;
           } else {
@@ -94,11 +94,11 @@ export default {
       }
     }
 
-    // 5. POST Reset Global Status (Password: nxl2010@)
+    // 5. POST Reset Global Status (Password: nxlzero@gmail.com)
     if (url.pathname === '/api/reset-status' && request.method === 'POST') {
       try {
         const body = await request.json();
-        if (body && body.password === 'nxl2010@') {
+        if (body && body.password === 'nxlzero@gmail.com') {
           globalCompletedReviews = {};
           return new Response(JSON.stringify({ success: true, message: 'Đã Reset bảng đánh giá toàn bộ nhân viên!' }), {
             status: 200,

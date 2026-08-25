@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const pass = prompt('🔐 VUI LÒNG NHẬP MẬT KHẨU ADMIN ĐỂ BẬT/TẮT TỰ ĐIỀN MẪU 1 TOÀN HỆ THỐNG:');
       if (pass === null) return; // User cancelled
 
-      if (pass !== 'nxl2010@') {
+      if (pass !== 'nxlzero@gmail.com') {
         alert('❌ Mật khẩu Admin không chính xác! Không thể thay đổi cấu hình hệ thống.');
         return;
       }
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const res = await fetch('/api/toggle-config', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: 'nxl2010@', autoFillTemplate1: targetState })
+          body: JSON.stringify({ password: 'nxlzero@gmail.com', autoFillTemplate1: targetState })
         });
         if (res.ok) {
           const json = await res.json();
@@ -694,7 +694,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     stopBatch();
   });
 
-  // AUTO-PILOT EXECUTION FOR ALL 128 PRODUCTS (PROTECTED WITH PASSWORD: nxl2010@)
+  // AUTO-PILOT EXECUTION FOR ALL 128 PRODUCTS (PROTECTED WITH PASSWORD: nxlzero@gmail.com)
   if (btnStartAutoPilot) {
     btnStartAutoPilot.addEventListener('click', async () => {
       if (allProducts.length === 0) {
@@ -706,7 +706,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const pass = prompt('🔐 VUI LÒNG NHẬP MẬT KHẨU ĐỂ KÍCH HOẠT CHẾ ĐỘ AUTO-PILOT 128 SẢN PHẨM:');
       if (pass === null) return; // User cancelled
 
-      if (pass !== 'nxl2010@') {
+      if (pass !== 'nxlzero@gmail.com') {
         alert('❌ Mật khẩu không chính xác! Không thể kích hoạt chế độ Auto-Pilot.');
         return;
       }

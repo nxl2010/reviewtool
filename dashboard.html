@@ -593,13 +593,13 @@
         renderTable(filtered);
       }
 
-      // Reset Button Handler with Global Sync & Password Verification: nxl2010@
+      // Reset Button Handler with Global Sync & Password Verification: nxlzero@gmail.com
       btnResetDashboard.addEventListener('click', async () => {
         const pass = prompt('🔐 VUI LÒNG NHẬP MẬT KHẨU ĐỂ RESET BẢNG ĐÁNH GIÁ CHUNG:');
         
         if (pass === null) return; // User cancelled
 
-        if (pass === 'nxl2010@') {
+        if (pass === 'nxlzero@gmail.com') {
           // Clear LocalStorage completion tracking
           localStorage.removeItem('kuchen_completed_reviews');
 
@@ -608,7 +608,7 @@
             await fetch('/api/reset-status', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ password: 'nxl2010@' })
+              body: JSON.stringify({ password: 'nxlzero@gmail.com' })
             });
           } catch (e) {}
 

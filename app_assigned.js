@@ -81,6 +81,66 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // Helper to send review payload via Proxy API or fallback iframe
+  async function submitReviewPayload(payload) {
+    // Try Cloudflare Proxy endpoint first
+    try {
+      const fd = new FormData();
+      fd.append('comment_post_ID', payload.pid);
+      fd.append('comment_parent', '0');
+      fd.append('submit', 'Gửi đánh giá ngay');
+      fd.append('author', payload.author);
+      fd.append('phone', payload.phone);
+      fd.append('email', payload.email || '');
+      fd.append('rating', payload.rating || '5');
+      fd.append('comment', payload.comment);
+      fd.append('product_url', payload.productUrl || 'https://kuchen.vn/');
+
+      const res = await fetch('/api/proxy-submit', {
+        method: 'POST',
+        body: fd
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) return { success: true, via: 'proxy' };
+      }
+    } catch (e) {
+      // Ignore proxy error and fallback to iframe
+    }
+
+    // Fallback to iframe submit
+    const tempForm = document.createElement('form');
+    tempForm.action = 'https://kuchen.vn/wp-comments-post.php';
+    tempForm.method = 'POST';
+    tempForm.target = 'hidden_submit_iframe';
+
+    const fields = {
+      comment_post_ID: payload.pid,
+      comment_parent: '0',
+      submit: 'Gửi đánh giá ngay',
+      author: payload.author,
+      phone: payload.phone,
+      email: payload.email || '',
+      rating: payload.rating || '5',
+      comment: payload.comment
+    };
+
+    for (let key in fields) {
+      const inp = document.createElement('input');
+      inp.type = 'hidden';
+      inp.name = key;
+      inp.value = fields[key];
+      tempForm.appendChild(inp);
+    }
+
+    document.body.appendChild(tempForm);
+    tempForm.submit();
+    document.body.removeChild(tempForm);
+
+    return { success: true, via: 'iframe' };
+  }
+
   btnClearLog.addEventListener('click', () => { logTerminal.innerHTML = ''; });
 
   // Load datasets
@@ -188,24 +248,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // Single Submission Handler
-  realForm.addEventListener('submit', (e) => {
+  realForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
     realProductId.value = productIdInput.value.trim();
     const pid = realProductId.value;
     const author = document.getElementById('authorInput').value.trim();
     const phone = document.getElementById('phoneInput').value.trim();
+    const email = document.getElementById('emailInput').value.trim();
     const comment = commentInput.value.trim();
     const ratingEl = document.querySelector('input[name="rating"]:checked');
-    const rating = ratingEl ? parseInt(ratingEl.value) : 5;
+    const rating = ratingEl ? ratingEl.value : '5';
 
     if (!pid) {
-      e.preventDefault();
       alert('Vui lòng chọn sản phẩm hoặc nhập Product ID!');
       log('Vui lòng chọn sản phẩm hoặc nhập Product ID!', 'warning');
       return;
     }
 
     if (comment.length < 10) {
-      e.preventDefault();
       alert('Nội dung đánh giá phải có tối thiểu 10 ký tự!');
       log('Nội dung đánh giá phải có tối thiểu 10 ký tự!', 'warning');
       return;
@@ -213,6 +274,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const selectedUrl = productUrlInput.value;
     const foundProduct = allProducts.find(p => p.url === selectedUrl || p.productId == pid);
+
+    btnSubmitSingle.disabled = true;
+    btnSubmitSingle.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi...';
+    log(`[Single Review] Đang phát request gửi đánh giá của "${author}" (${phone}) cho Product ID ${pid}...`, 'info');
+
+    const res = await submitReviewPayload({
+      pid, author, phone, email, comment, rating, productUrl: selectedUrl
+    });
 
     // Save completion state locally for Dashboard sync
     recordCompletion(pid, {
@@ -223,20 +292,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       author: author,
       phone: phone,
       comment: comment,
-      rating: rating
+      rating: parseInt(rating)
     });
 
-    log(`[Single Review] Đang gửi đánh giá của "${author}" (${phone}) cho Product ID ${pid}...`, 'info');
-    
-    btnSubmitSingle.disabled = true;
-    btnSubmitSingle.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi...';
-
-    setTimeout(() => {
-      btnSubmitSingle.disabled = false;
-      btnSubmitSingle.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi Đánh Giá Ngay';
-      log(`[Single Review] 🎉 THÀNH CÔNG: Đã phát request gửi đánh giá lên kuchen.vn và lưu trạng thái hoàn thành!`, 'success');
-      alert('🎉 Đánh giá đã được gửi thành công! Trạng thái đã cập nhật vào Dashboard.');
-    }, 1500);
+    btnSubmitSingle.disabled = false;
+    btnSubmitSingle.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi Đánh Giá Ngay';
+    log(`[Single Review] 🎉 THÀNH CÔNG: Đã phát request tới kuchen.vn (Kênh: ${res.via}) và lưu trạng thái vào Dashboard!`, 'success');
+    alert('🎉 Đánh giá đã được gửi thành công!');
   });
 
   // Batch Table Management
@@ -309,7 +371,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const minD = parseInt(document.getElementById('minDelayInput').value) || 3;
     const maxD = parseInt(document.getElementById('maxDelayInput').value) || 7;
 
-    log(`[Batch] 🚀 Bắt đầu tiến trình gửi ${items.length} đánh giá trực tiếp từ Browser...`, 'info');
+    log(`[Batch] 🚀 Bắt đầu tiến trình gửi ${items.length} đánh giá trực tiếp từ Browser/Proxy...`, 'info');
 
     for (let i = 0; i < items.length; i++) {
       if (!isBatchRunning) break;
@@ -317,33 +379,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       log(`[Batch] [${i+1}/${items.length}] Đang gửi đánh giá của "${item.author}"...`, 'info');
 
-      // Submit via iframe
-      const tempForm = document.createElement('form');
-      tempForm.action = 'https://kuchen.vn/wp-comments-post.php';
-      tempForm.method = 'POST';
-      tempForm.target = 'hidden_submit_iframe';
-
-      const fields = {
-        comment_post_ID: pid,
-        comment_parent: '0',
-        submit: 'Gửi đánh giá ngay',
+      const res = await submitReviewPayload({
+        pid: pid,
         author: item.author,
         phone: item.phone,
+        comment: item.comment,
         rating: item.rating,
-        comment: item.comment
-      };
-
-      for (let key in fields) {
-        const inp = document.createElement('input');
-        inp.type = 'hidden';
-        inp.name = key;
-        inp.value = fields[key];
-        tempForm.appendChild(inp);
-      }
-
-      document.body.appendChild(tempForm);
-      tempForm.submit();
-      document.body.removeChild(tempForm);
+        productUrl: selectedUrl
+      });
 
       // Record completion status locally for Dashboard
       recordCompletion(pid, {
@@ -354,7 +397,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         author: item.author,
         phone: item.phone,
         comment: item.comment,
-        rating: item.rating
+        rating: parseInt(item.rating)
       });
 
       const pct = Math.round(((i + 1) / items.length) * 100);
@@ -362,7 +405,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       progressPercent.textContent = `${pct}%`;
       progressText.textContent = `Đã xử lý ${i + 1}/${items.length}...`;
 
-      log(`[Batch] ✅ [${i+1}/${items.length}] Đã phát request gửi thành công cho "${item.author}"!`, 'success');
+      log(`[Batch] ✅ [${i+1}/${items.length}] Đã phát request gửi thành công cho "${item.author}" (Kênh: ${res.via})!`, 'success');
 
       if (i < items.length - 1 && isBatchRunning) {
         const delaySec = Math.floor(Math.random() * (maxD - minD + 1)) + minD;

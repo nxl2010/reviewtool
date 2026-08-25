@@ -44,11 +44,39 @@ export default {
       });
     }
 
-    // 3. POST Toggle System-Wide Configuration (Admin Password: nxlzero@gmail.com)
+    // 3. POST Verify Password
+    if (url.pathname === '/api/verify-password' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const expectedPassword = env.key || 'nxlzero@gmail.com';
+        if (body && body.password === expectedPassword) {
+          return new Response(JSON.stringify({ success: true }), {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            }
+          });
+        } else {
+          return new Response(JSON.stringify({ success: false, message: 'Sai mật khẩu!' }), {
+            status: 403,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            }
+          });
+        }
+      } catch (e) {
+        return new Response(JSON.stringify({ success: false, error: e.message }), { status: 400 });
+      }
+    }
+
+    // 4. POST Toggle System-Wide Configuration
     if (url.pathname === '/api/toggle-config' && request.method === 'POST') {
       try {
         const body = await request.json();
-        if (body && body.password === 'nxlzero@gmail.com') {
+        const expectedPassword = env.key || 'nxlzero@gmail.com';
+        if (body && body.password === expectedPassword) {
           if (typeof body.autoFillTemplate1 === 'boolean') {
             globalConfig.autoFillTemplate1 = body.autoFillTemplate1;
           } else {
@@ -75,7 +103,7 @@ export default {
       }
     }
 
-    // 4. POST Record New Review Completion from any staff member
+    // 5. POST Record New Review Completion from any staff member
     if (url.pathname === '/api/update-status' && request.method === 'POST') {
       try {
         const body = await request.json();
@@ -94,11 +122,12 @@ export default {
       }
     }
 
-    // 5. POST Reset Global Status (Password: nxlzero@gmail.com)
+    // 6. POST Reset Global Status
     if (url.pathname === '/api/reset-status' && request.method === 'POST') {
       try {
         const body = await request.json();
-        if (body && body.password === 'nxlzero@gmail.com') {
+        const expectedPassword = env.key || 'nxlzero@gmail.com';
+        if (body && body.password === expectedPassword) {
           globalCompletedReviews = {};
           return new Response(JSON.stringify({ success: true, message: 'Đã Reset bảng đánh giá toàn bộ nhân viên!' }), {
             status: 200,

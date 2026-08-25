@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Bảng Quản Lý Trạng Thái Hoàn Thành Đánh Giá - Kuchen Products</title>
+  <title>Dashboard - Tool nhập đánh giá - by @nxlzero</title>
   <!-- Google Fonts & FontAwesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -319,10 +319,10 @@
     <header class="header-card">
       <div class="header-title">
         <h1>
-          <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> Dashboard Quản Lý Đánh Giá
+          <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> Dashboard - Tool nhập đánh giá
           <span class="live-pulse-badge"><span class="pulse-dot"></span> Tự động đồng bộ 3s</span>
         </h1>
-        <p>Thống kê chi tiết tiến độ hoàn thành đánh giá thực tế cho 128 sản phẩm Kuchen</p>
+        <p>by @nxlzero • Thống kê chi tiết tiến độ hoàn thành đánh giá thực tế</p>
       </div>
       <div class="header-actions">
         <button id="btnResetDashboard" class="btn-danger"><i class="fa-solid fa-rotate-left"></i> Reset Bảng</button>
@@ -593,40 +593,41 @@
         renderTable(filtered);
       }
 
-      // Reset Button Handler with Global Sync & Password Verification: nxlzero@gmail.com
+      // Reset Button Handler with Global Sync & Password Verification
       btnResetDashboard.addEventListener('click', async () => {
         const pass = prompt('🔐 VUI LÒNG NHẬP MẬT KHẨU ĐỂ RESET BẢNG ĐÁNH GIÁ CHUNG:');
         
         if (pass === null) return; // User cancelled
 
-        if (pass === 'nxlzero@gmail.com') {
-          // Clear LocalStorage completion tracking
-          localStorage.removeItem('kuchen_completed_reviews');
-
-          // Reset Global Worker Status Database
-          try {
-            await fetch('/api/reset-status', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ password: 'nxlzero@gmail.com' })
-            });
-          } catch (e) {}
-
-          // Reset all status to initial pending state
-          initialStatusData.forEach(item => {
-            item.status = 'CHƯA ĐÁNH GIÁ';
-            item.statusClass = 'pending';
-            item.reviewContent = 'Chưa có đánh giá';
-            item.reviewerName = '-';
-            item.reviewerPhone = '-';
-            item.rating = 0;
-            item.completedAt = '-';
+        try {
+          const res = await fetch('/api/reset-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pass })
           });
+          const json = await res.json();
+          if (json.success) {
+            // Clear LocalStorage completion tracking
+            localStorage.removeItem('kuchen_completed_reviews');
 
-          await loadAndMergeData();
-          alert('🎉 ĐÃ RESET TOÀN BỘ BẢNG ĐÁNH GIÁ TOÀN CẦU CHUNG CHO CẢ 2 BỘ PHẬN VỀ 0% THÀNH CÔNG!');
-        } else {
-          alert('❌ Mật khẩu không chính xác! Không thể Reset dữ liệu.');
+            // Reset all status to initial pending state
+            initialStatusData.forEach(item => {
+              item.status = 'CHƯA ĐÁNH GIÁ';
+              item.statusClass = 'pending';
+              item.reviewContent = 'Chưa có đánh giá';
+              item.reviewerName = '-';
+              item.reviewerPhone = '-';
+              item.rating = 0;
+              item.completedAt = '-';
+            });
+
+            await loadAndMergeData();
+            alert('🎉 ĐÃ RESET TOÀN BỘ BẢNG ĐÁNH GIÁ TOÀN CẦU CHUNG CHO CẢ 2 BỘ PHẬN VỀ 0% THÀNH CÔNG!');
+          } else {
+            alert('❌ Mật khẩu không chính xác! Không thể Reset dữ liệu.');
+          }
+        } catch (e) {
+          alert('❌ Lỗi kết nối tới Server!');
         }
       });
     });

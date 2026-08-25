@@ -47,11 +47,39 @@ export default {
       }
     }
 
-    // 3. POST Reset Global Status (Password: nxlzero@gmail.com)
+    // 3. POST Verify Password
+    if (url.pathname === '/api/verify-password' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const expectedPassword = env.key || 'nxlzero@gmail.com';
+        if (body && body.password === expectedPassword) {
+          return new Response(JSON.stringify({ success: true }), {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            }
+          });
+        } else {
+          return new Response(JSON.stringify({ success: false, message: 'Sai mật khẩu!' }), {
+            status: 403,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            }
+          });
+        }
+      } catch (e) {
+        return new Response(JSON.stringify({ success: false, error: e.message }), { status: 400 });
+      }
+    }
+
+    // 4. POST Reset Global Status
     if (url.pathname === '/api/reset-status' && request.method === 'POST') {
       try {
         const body = await request.json();
-        if (body && body.password === 'nxlzero@gmail.com') {
+        const expectedPassword = env.key || 'nxlzero@gmail.com';
+        if (body && body.password === expectedPassword) {
           globalCompletedReviews = {};
           return new Response(JSON.stringify({ success: true, message: 'Đã Reset bảng đánh giá toàn bộ 13 nhân viên!' }), {
             status: 200,

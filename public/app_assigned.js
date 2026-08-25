@@ -250,14 +250,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Update Template Options & Auto-fill Template 1 by default
+  // Update Template Options
   function updateTemplateOptions(foundProduct) {
+    if (!templateSelect) return;
     templateSelect.innerHTML = '';
     
     if (!foundProduct || (!foundProduct.template1 && !foundProduct.template2)) {
       templateSelect.innerHTML = '<option value="">-- Sản phẩm này chưa có mẫu câu --</option>';
-      commentInput.value = '';
-      updateCharCount();
       return;
     }
 
@@ -279,20 +278,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       opt2.textContent = `📝 Mẫu 2: "${foundProduct.template2.substring(0, 60)}..."`;
       templateSelect.appendChild(opt2);
     }
-
-    // Auto-fill Template 1 into commentInput by default as requested!
-    if (foundProduct.template1) {
-      commentInput.value = foundProduct.template1;
-      templateSelect.value = foundProduct.template1;
-      updateCharCount();
-    } else if (foundProduct.template2) {
-      commentInput.value = foundProduct.template2;
-      templateSelect.value = foundProduct.template2;
-      updateCharCount();
-    }
   }
 
-  // Handle product select change
+  // Handle product select change (Keep commentInput blank for manual typing as per user request)
   excelProductSelect.addEventListener('change', () => {
     const selectedUrl = excelProductSelect.value;
     if (selectedUrl) {
@@ -304,50 +292,62 @@ document.addEventListener('DOMContentLoaded', async () => {
         realProductId.value = targetId;
         log(`[Sản Phẩm] Đã chọn: "${found.name}" (Real Product ID: ${targetId})`, 'info');
 
-        // Update Template Select Box & Auto-fill Template 1 for this product
+        // Update Template Select Box in background if needed
         updateTemplateOptions(found);
+
+        // Leave comment input empty for manual typing as requested
+        commentInput.value = '';
+        updateCharCount();
       }
     } else {
       productUrlInput.value = '';
       productIdInput.value = '';
       realProductId.value = '';
+      commentInput.value = '';
+      updateCharCount();
       updateTemplateOptions(null);
     }
   });
 
   // Handle Template Select Change
-  templateSelect.addEventListener('change', () => {
-    const selectedText = templateSelect.value;
-    if (selectedText) {
-      commentInput.value = selectedText;
-      updateCharCount();
-    }
-  });
+  if (templateSelect) {
+    templateSelect.addEventListener('change', () => {
+      const selectedText = templateSelect.value;
+      if (selectedText) {
+        commentInput.value = selectedText;
+        updateCharCount();
+      }
+    });
+  }
 
   // Template Quick Buttons
-  btnChooseTemplate1.addEventListener('click', () => {
-    const selectedUrl = excelProductSelect.value;
-    const found = allProducts.find(p => p.url === selectedUrl);
-    if (found && found.template1) {
-      commentInput.value = found.template1;
-      templateSelect.value = found.template1;
-      updateCharCount();
-    } else {
-      alert('Vui lòng chọn sản phẩm trước hoặc sản phẩm này chưa có Mẫu 1!');
-    }
-  });
+  if (btnChooseTemplate1) {
+    btnChooseTemplate1.addEventListener('click', () => {
+      const selectedUrl = excelProductSelect.value;
+      const found = allProducts.find(p => p.url === selectedUrl);
+      if (found && found.template1) {
+        commentInput.value = found.template1;
+        if (templateSelect) templateSelect.value = found.template1;
+        updateCharCount();
+      } else {
+        alert('Vui lòng chọn sản phẩm trước hoặc sản phẩm này chưa có Mẫu 1!');
+      }
+    });
+  }
 
-  btnChooseTemplate2.addEventListener('click', () => {
-    const selectedUrl = excelProductSelect.value;
-    const found = allProducts.find(p => p.url === selectedUrl);
-    if (found && found.template2) {
-      commentInput.value = found.template2;
-      templateSelect.value = found.template2;
-      updateCharCount();
-    } else {
-      alert('Vui lòng chọn sản phẩm trước hoặc sản phẩm này chưa có Mẫu 2!');
-    }
-  });
+  if (btnChooseTemplate2) {
+    btnChooseTemplate2.addEventListener('click', () => {
+      const selectedUrl = excelProductSelect.value;
+      const found = allProducts.find(p => p.url === selectedUrl);
+      if (found && found.template2) {
+        commentInput.value = found.template2;
+        if (templateSelect) templateSelect.value = found.template2;
+        updateCharCount();
+      } else {
+        alert('Vui lòng chọn sản phẩm trước hoặc sản phẩm này chưa có Mẫu 2!');
+      }
+    });
+  }
 
   function updateCharCount() {
     const len = commentInput.value.length;

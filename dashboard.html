@@ -165,6 +165,12 @@
       border: 1px solid rgba(5, 150, 105, 0.3);
     }
 
+    .badge-status.pending {
+      background: rgba(217, 119, 6, 0.1);
+      color: var(--warning);
+      border: 1px solid rgba(217, 119, 6, 0.3);
+    }
+
     .btn-link {
       color: var(--primary);
       text-decoration: none;
@@ -210,15 +216,15 @@
       <div class="kpi-card">
         <div class="kpi-icon green"><i class="fa-solid fa-circle-check"></i></div>
         <div class="kpi-info">
-          <h2 id="kpiCompleted">128</h2>
-          <p>ĐÃ HOÀN THÀNH (100%)</p>
+          <h2 id="kpiCompleted">0 (0%)</h2>
+          <p>ĐÃ HOÀN THÀNH</p>
         </div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-icon orange"><i class="fa-solid fa-users"></i></div>
+        <div class="kpi-icon orange"><i class="fa-solid fa-clock"></i></div>
         <div class="kpi-info">
-          <h2>13</h2>
-          <p>NHÂN VIÊN PHỤ TRÁCH</p>
+          <h2 id="kpiPending">128</h2>
+          <p>CHƯA ĐÁNH GIÁ</p>
         </div>
       </div>
     </section>
@@ -245,9 +251,9 @@
             <th style="width: 50px;">STT</th>
             <th style="width: 140px;">Người phụ trách</th>
             <th>Tên Sản Phẩm</th>
-            <th style="width: 140px;">Trạng Thái</th>
+            <th style="width: 150px;">Trạng Thái</th>
             <th style="width: 90px;">Đánh giá</th>
-            <th>Nội Dung Đánh Giá Đã Gửi</th>
+            <th>Nội Dung Đánh Giá</th>
             <th style="width: 150px;">Thời gian</th>
           </tr>
         </thead>
@@ -265,6 +271,7 @@
       const statusTableBody = document.getElementById('statusTableBody');
       const kpiTotal = document.getElementById('kpiTotal');
       const kpiCompleted = document.getElementById('kpiCompleted');
+      const kpiPending = document.getElementById('kpiPending');
 
       let allStatusData = [];
 
@@ -288,10 +295,15 @@
 
       function renderTable(data) {
         statusTableBody.innerHTML = '';
+        const completedCount = data.filter(d => d.status === 'HOÀN THÀNH').length;
+        const pendingCount = data.length - completedCount;
+
         kpiTotal.textContent = data.length;
-        kpiCompleted.textContent = `${data.length} (${data.length === 128 ? '100%' : Math.round(data.length/128*100) + '%'})`;
+        kpiCompleted.textContent = `${completedCount} (${Math.round((completedCount/data.length)*100 || 0)}%)`;
+        kpiPending.textContent = pendingCount;
 
         data.forEach(item => {
+          const isDone = item.status === 'HOÀN THÀNH';
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td><strong>${item.stt}</strong></td>
@@ -301,14 +313,20 @@
               <div style="font-size:11px; color:#64748b;">SKU: ${item.sku || 'N/A'}</div>
             </td>
             <td>
-              <span class="badge-status completed">
-                <i class="fa-solid fa-circle-check"></i> HOÀN THÀNH
-              </span>
+              ${isDone ? `
+                <span class="badge-status completed">
+                  <i class="fa-solid fa-circle-check"></i> HOÀN THÀNH
+                </span>
+              ` : `
+                <span class="badge-status pending">
+                  <i class="fa-solid fa-clock"></i> CHƯA ĐÁNH GIÁ
+                </span>
+              `}
             </td>
-            <td><span style="color:#d97706; font-weight:700;">5 ★</span></td>
+            <td><span style="color:${isDone ? '#d97706' : '#94a3b8'}; font-weight:700;">${isDone ? item.rating + ' ★' : '-'}</span></td>
             <td style="font-size:12px; color:#334155;">
-              <div><em>"${item.reviewContent}"</em></div>
-              <div style="font-size:11px; color:#64748b; margin-top:2px;">Người gửi: ${item.reviewerName} (${item.reviewerPhone})</div>
+              <div>${isDone ? `<em>"${item.reviewContent}"</em>` : '<span style="color:#94a3b8;">Chưa có nhận xét</span>'}</div>
+              ${isDone ? `<div style="font-size:11px; color:#64748b; margin-top:2px;">Người gửi: ${item.reviewerName} (${item.reviewerPhone})</div>` : ''}
             </td>
             <td style="font-size:12px; color:#64748b;">${item.completedAt}</td>
           `;

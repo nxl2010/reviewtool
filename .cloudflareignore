@@ -1,0 +1,9 @@
+node_modules/
+*.zip
+*.log
+server.js
+cli.js
+parse_assigned.js
+split_categories.js
+reset_data.js
+fetch_all_product_ids.js

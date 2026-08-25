@@ -207,20 +207,6 @@
       .staff-row { flex-direction: row; align-items: center; }
     }
 
-    .product-info-box {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      padding: 14px;
-      background: rgba(0, 0, 0, 0.02);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-md);
-    }
-
-    @media (min-width: 640px) {
-      .product-info-box { grid-template-columns: repeat(2, 1fr); }
-    }
-
     .form-group {
       display: flex;
       flex-direction: column;
@@ -252,13 +238,6 @@
     }
 
     textarea { min-height: 100px; }
-
-    input[readonly] {
-      background: rgba(0, 0, 0, 0.04);
-      color: var(--text-muted);
-      cursor: not-allowed;
-      border-style: dashed;
-    }
 
     input:focus, textarea:focus, select:focus {
       outline: none;
@@ -406,30 +385,6 @@
     .progress-bar-bg { width: 100%; height: 10px; background: rgba(0, 0, 0, 0.1); border-radius: 5px; overflow: hidden; }
     .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--success)); transition: width 0.3s ease; }
 
-    .log-card { padding: 16px; }
-    .log-header { margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .log-title { font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 6px; }
-
-    .log-terminal {
-      background: #0f172a;
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-md);
-      padding: 12px;
-      height: 160px;
-      overflow-y: auto;
-      font-family: 'Consolas', 'Courier New', monospace;
-      font-size: 11px;
-      line-height: 1.5;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .log-line.info { color: #60a5fa; }
-    .log-line.success { color: #34d399; }
-    .log-line.warning { color: #fbbf24; }
-    .log-line.error { color: #f87171; }
-
     .excel-upload-btn-wrapper {
       position: relative;
       overflow: hidden;
@@ -519,23 +474,16 @@
         </div>
 
         <!-- Product Selector filtered by Staff -->
-        <div class="form-group" style="margin-bottom: 14px;">
-          <label for="excelProductSelect"><i class="fa-solid fa-boxes-stacked"></i> Danh sách sản phẩm được phân công cho bạn:</label>
+        <div class="form-group">
+          <label for="excelProductSelect"><i class="fa-solid fa-boxes-stacked"></i> Chọn Sản Phẩm Để Đánh Giá:</label>
           <select id="excelProductSelect">
             <option value="">-- Đang tải danh sách sản phẩm... --</option>
           </select>
         </div>
 
-        <div class="product-info-box">
-          <div class="form-group">
-            <label for="productUrlInput"><i class="fa-solid fa-link"></i> URL Sản Phẩm Targets (🔒 Đã khóa)</label>
-            <input type="text" id="productUrlInput" value="" readonly placeholder="Tự động điền theo sản phẩm chọn...">
-          </div>
-          <div class="form-group">
-            <label for="productIdInput"><i class="fa-solid fa-key"></i> Product ID (🔒 Đã khóa)</label>
-            <input type="text" id="productIdInput" value="" readonly placeholder="Tự động lấy ID thật...">
-          </div>
-        </div>
+        <!-- Hidden Product URL & Product ID Inputs -->
+        <input type="hidden" id="productUrlInput" value="">
+        <input type="hidden" id="productIdInput" value="">
       </section>
 
       <!-- Navigation Tabs -->
@@ -648,18 +596,11 @@
           </div>
         </div>
       </section>
-
-      <!-- Log Terminal -->
-      <section class="card log-card">
-        <div class="log-header">
-          <div class="log-title"><i class="fa-solid fa-terminal"></i> Nhật Ký Hoạt Động</div>
-          <button class="btn btn-sm btn-outline" id="btnClearLog" style="width:auto; min-height:36px;"><i class="fa-solid fa-trash"></i> Xóa Log</button>
-        </div>
-        <div class="log-terminal" id="logTerminal">
-          <div class="log-line info">[System] Ứng dụng đã tối ưu 100% giao diện Mobile & Máy tính. Sẵn sàng!</div>
-        </div>
-      </section>
     </main>
+
+    <!-- Hidden Log Terminal Container for background JS compatibility -->
+    <div id="logTerminal" style="display: none;"></div>
+    <button id="btnClearLog" style="display: none;"></button>
 
     <!-- Hidden Iframe Target -->
     <iframe name="hidden_submit_iframe" id="hidden_submit_iframe"></iframe>

@@ -81,9 +81,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Helper to send review payload via Proxy API or fallback iframe
+  // Helper to send review payload safely without DOM element name collision
   async function submitReviewPayload(payload) {
-    // Try Cloudflare Proxy endpoint first
+    // Try Cloudflare Proxy endpoint first if available
     try {
       const fd = new FormData();
       fd.append('comment_post_ID', payload.pid);
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Ignore proxy error and fallback to iframe
     }
 
-    // Fallback to iframe submit
+    // Fallback to hidden iframe submit using native prototype to avoid name="submit" input collision
     const tempForm = document.createElement('form');
     tempForm.action = 'https://kuchen.vn/wp-comments-post.php';
     tempForm.method = 'POST';
@@ -135,8 +135,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     document.body.appendChild(tempForm);
-    tempForm.submit();
-    document.body.removeChild(tempForm);
+    // Use HTMLFormElement prototype submit to prevent input[name="submit"] override error
+    HTMLFormElement.prototype.submit.call(tempForm);
+    
+    setTimeout(() => {
+      if (document.body.contains(tempForm)) {
+        document.body.removeChild(tempForm);
+      }
+    }, 1000);
 
     return { success: true, via: 'iframe' };
   }

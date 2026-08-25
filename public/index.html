@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Kuchen Review Tool - Giao Diện Mobile & Light Theme Tối Ưu</title>
+  <title>Kuchen Review Tool - Auto-Pilot & Light Theme Tối Ưu</title>
   <!-- Google Fonts & FontAwesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -306,6 +306,12 @@
       box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25);
     }
 
+    .tab-btn.gold.active {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border-color: #d97706;
+      box-shadow: 0 4px 16px rgba(217, 119, 6, 0.3);
+    }
+
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
@@ -370,6 +376,7 @@
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-success { background: var(--success); color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
+    .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3); }
     .btn-secondary { background: rgba(0, 0, 0, 0.05); color: var(--text-main); }
     .btn-outline { background: transparent; border: 1px solid var(--card-border); color: var(--text-muted); }
 
@@ -410,13 +417,45 @@
     .progress-section {
       margin-top: 14px;
       background: rgba(0, 0, 0, 0.03);
-      padding: 12px;
+      padding: 14px;
       border-radius: var(--radius-md);
+      border: 1px solid var(--card-border);
     }
 
-    .progress-info { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-    .progress-bar-bg { width: 100%; height: 10px; background: rgba(0, 0, 0, 0.1); border-radius: 5px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--success)); transition: width 0.3s ease; }
+    .progress-info { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .progress-bar-bg { width: 100%; height: 12px; background: rgba(0, 0, 0, 0.1); border-radius: 6px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #f59e0b, #10b981); transition: width 0.3s ease; }
+
+    .autopilot-card-box {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(16, 185, 129, 0.08));
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+
+    .autopilot-features-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    @media (min-width: 640px) {
+      .autopilot-features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .feature-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
 
     .excel-upload-btn-wrapper {
       position: relative;
@@ -525,7 +564,10 @@
           <i class="fa-solid fa-paper-plane"></i> Gửi Đánh Giá Đơn
         </button>
         <button class="tab-btn" data-tab="tabBatch">
-          <i class="fa-solid fa-layer-group"></i> Gửi Hàng Loạt (Batch)
+          <i class="fa-solid fa-layer-group"></i> Gửi Hàng Loạt
+        </button>
+        <button class="tab-btn gold" data-tab="tabAutoPilot">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Pilot 128 SP
         </button>
       </nav>
 
@@ -638,6 +680,49 @@
             <button id="btnStopBatch" class="btn btn-danger btn-lg" style="display: none;">
               <i class="fa-solid fa-stop"></i> Dừng Lại
             </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: AUTO-PILOT ALL 128 PRODUCTS -->
+      <section class="tab-content" id="tabAutoPilot">
+        <div class="card">
+          <div class="autopilot-card-box">
+            <h2 style="font-size:18px; color:var(--text-main); margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+              <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-gold);"></i> Chế Độ Chạy Tự Động 100% (Auto-Pilot 128 Sản Phẩm)
+            </h2>
+            <p style="font-size:13px; color:var(--text-muted);">
+              Chỉ 1-Click duy nhất, hệ thống sẽ tự động duyệt từ sản phẩm 1 đến 128, tự điền tên người đánh giá tự nhiên, tự chọn mẫu câu nhận xét tương ứng và đồng bộ sang Dashboard!
+            </p>
+
+            <div class="autopilot-features-grid">
+              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> 128/128 Sản Phẩm Kuchen</div>
+              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Phân công đúng 13 Nhân viên</div>
+              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Tự bốc Mẫu câu 1 / Mẫu 2 chuẩn</div>
+              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> SĐT 0334333777 & Email chung</div>
+              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Giãn cách ngẫu nhiên (3 - 6 giây)</div>
+              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Tự động đồng bộ sang Dashboard</div>
+            </div>
+
+            <div class="progress-section" id="autoPilotProgressSection" style="display: none;">
+              <div class="progress-info">
+                <span id="autoPilotProgressText">Đang tự động xử lý...</span>
+                <span id="autoPilotProgressPercent">0%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="autoPilotProgressBarFill"></div>
+              </div>
+              <div id="autoPilotCurrentItemText" style="font-size:12px; color:var(--text-muted); margin-top:6px; font-weight:600;"></div>
+            </div>
+
+            <div class="form-actions" style="margin-top:16px;">
+              <button id="btnStartAutoPilot" class="btn btn-warning btn-lg">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> BẮT ĐẦU CHẠY TỰ ĐỘNG 128 SẢN PHẨM
+              </button>
+              <button id="btnStopAutoPilot" class="btn btn-danger btn-lg" style="display: none;">
+                <i class="fa-solid fa-circle-stop"></i> DỪNG CHẠY TỰ ĐỘNG
+              </button>
+            </div>
           </div>
         </div>
       </section>

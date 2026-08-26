@@ -43,9 +43,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const staffProductCountBadge = document.getElementById('staffProductCountBadge');
   const categoryProductCountBadge = document.getElementById('categoryProductCountBadge');
 
+  const btnStartAutoPilotStaff = document.getElementById('btnStartAutoPilotStaff');
   const btnStartAutoPilot = document.getElementById('btnStartAutoPilot');
   const btnStartAutoPilotAll = document.getElementById('btnStartAutoPilotAll');
   const btnStopAutoPilot = document.getElementById('btnStopAutoPilot');
+  const quickStaffButtonsContainer = document.getElementById('quickStaffButtonsContainer');
   const autoPilotProgressSection = document.getElementById('autoPilotProgressSection');
   const autoPilotProgressText = document.getElementById('autoPilotProgressText');
   const autoPilotProgressPercent = document.getElementById('autoPilotProgressPercent');
@@ -266,6 +268,45 @@ document.addEventListener('DOMContentLoaded', async () => {
       opt.textContent = `👤 ${deptTitle}: ${s.staffName} (${s.count} SP)`;
       staffSelect.appendChild(opt);
     });
+
+    renderQuickStaffButtons(sList);
+  }
+
+  function renderQuickStaffButtons(sList) {
+    if (!quickStaffButtonsContainer) return;
+    quickStaffButtonsContainer.innerHTML = '';
+
+    sList.forEach(s => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-quick-staff';
+      btn.style.cssText = `
+        padding: 8px 14px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-md);
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--text-main);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+      `;
+      btn.innerHTML = `<i class="fa-solid fa-user-check" style="color:var(--primary);"></i> ${s.staffName} <span style="font-size:11px; opacity:0.75; color:var(--text-muted);">(${s.count} SP)</span>`;
+
+      btn.addEventListener('click', () => {
+        if (staffSelect) staffSelect.value = s.staffName;
+        if (categorySelect) categorySelect.value = 'ALL';
+        filterProducts();
+
+        const staffProducts = allProducts.filter(p => p.assignee === s.staffName);
+        runAutoPilotLoop(staffProducts, `Nhân Viên: ${s.staffName}`);
+      });
+
+      quickStaffButtonsContainer.appendChild(btn);
+    });
   }
 
   function populateCategoryDropdown(products) {
@@ -318,11 +359,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updateAutoPilotUI(selectedCat, selectedStaff, count) {
     if (btnStartAutoPilot) {
       if (selectedCat !== 'ALL') {
-        btnStartAutoPilot.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> CHẠY TỰ ĐỘNG DANH MỤC "${selectedCat}" (${count} SP)`;
-      } else if (selectedStaff !== 'ALL') {
-        btnStartAutoPilot.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> CHẠY TỰ ĐỘNG CHO "${selectedStaff}" (${count} SP)`;
+        btnStartAutoPilot.innerHTML = `<i class="fa-solid fa-layer-group"></i> 📁 CHẠY DANH MỤC "${selectedCat}" (${count} SP)`;
       } else {
-        btnStartAutoPilot.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> BẮT ĐẦU CHẠY THEO BỘ LỌC DANH MỤC (${count} SP)`;
+        btnStartAutoPilot.innerHTML = `<i class="fa-solid fa-layer-group"></i> 📁 CHẠY THEO DANH MỤC`;
+      }
+    }
+
+    if (btnStartAutoPilotStaff) {
+      if (selectedStaff !== 'ALL') {
+        btnStartAutoPilotStaff.innerHTML = `<i class="fa-solid fa-user-gear"></i> 👤 CHẠY CHO "${selectedStaff}" (${count} SP)`;
+      } else {
+        btnStartAutoPilotStaff.innerHTML = `<i class="fa-solid fa-user-gear"></i> 👤 CHẠY THEO NGƯỜI PHỤ TRÁCH`;
       }
     }
   }
@@ -425,21 +472,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     stopAutoPilot();
   }
 
+  if (btnStartAutoPilotStaff) {
+    btnStartAutoPilotStaff.addEventListener('click', () => {
+      const selectedStaff = staffSelect ? staffSelect.value : 'ALL';
+      if (selectedStaff === 'ALL') {
+        alert('Vui lòng chọn 1 người phụ trách cụ thể trong danh sách hoặc bấm nút chạy nhanh theo từng người!');
+        return;
+      }
+      const staffProducts = allProducts.filter(p => p.assignee === selectedStaff);
+      runAutoPilotLoop(staffProducts, `Nhân Viên: ${selectedStaff}`);
+    });
+  }
+
   if (btnStartAutoPilot) {
     btnStartAutoPilot.addEventListener('click', () => {
-      const selectedStaff = staffSelect ? staffSelect.value : 'ALL';
       const selectedCat = categorySelect ? categorySelect.value : 'ALL';
-      
-      let filtered = allProducts;
-      if (selectedStaff !== 'ALL') filtered = filtered.filter(p => p.assignee === selectedStaff);
-      if (selectedCat !== 'ALL') filtered = filtered.filter(p => (p.category || 'Chưa phân loại') === selectedCat);
-
-      let scopeName = 'Bộ Lọc Hiện Tại';
-      if (selectedCat !== 'ALL') scopeName = `Danh Mục: ${selectedCat}`;
-      else if (selectedStaff !== 'ALL') scopeName = `Nhân Viên: ${selectedStaff}`;
-      else scopeName = '128 Sản Phẩm';
-
-      runAutoPilotLoop(filtered, scopeName);
+      if (selectedCat === 'ALL') {
+        alert('Vui lòng chọn 1 danh mục cụ thể trong ô "Chọn Danh Mục Sản Phẩm Để Chạy"!');
+        return;
+      }
+      const catProducts = allProducts.filter(p => (p.category || 'Chưa phân loại') === selectedCat);
+      runAutoPilotLoop(catProducts, `Danh Mục: ${selectedCat}`);
     });
   }
 
@@ -458,6 +511,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function stopAutoPilot() {
     isAutoPilotRunning = false;
+    if (btnStartAutoPilotStaff) btnStartAutoPilotStaff.style.display = 'inline-flex';
     if (btnStartAutoPilot) btnStartAutoPilot.style.display = 'inline-flex';
     if (btnStartAutoPilotAll) btnStartAutoPilotAll.style.display = 'inline-flex';
     if (btnStopAutoPilot) btnStopAutoPilot.style.display = 'none';

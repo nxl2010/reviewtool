@@ -529,6 +529,12 @@
             <span class="badge-user" id="categoryProductCountBadge" style="flex: 1;">Danh mục: Tất cả (15 danh mục)</span>
             <span class="badge-user" id="staffProductCountBadge" style="flex: 1;">Phụ trách: Tất cả sản phẩm</span>
           </div>
+
+          <!-- Quick Staff Buttons Bar -->
+          <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(217, 119, 6, 0.3);">
+            <label style="font-weight: 700; margin-bottom: 8px; font-size: 12.5px;"><i class="fa-solid fa-users"></i> ⚡ Chạy Nhanh Cho Từng Người Phụ Trách:</label>
+            <div id="quickStaffButtonsContainer" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;"></div>
+          </div>
         </div>
 
         <!-- Auto-Pilot Central Console Card -->
@@ -537,11 +543,11 @@
             <i class="fa-solid fa-robot" style="color:var(--accent-gold);"></i> Bảng Điều Khiển Auto-Pilot Tự Động 100%
           </h2>
           <p style="font-size:13px; color:var(--text-muted);" id="autoPilotDescription">
-            Hệ thống sẽ tự động duyệt các sản phẩm theo <strong>Bộ lọc đang chọn</strong> (hoặc toàn bộ 128 sản phẩm), tự điền tên người đánh giá ngẫu nhiên, tự chọn mẫu câu nhận xét tương ứng và đồng bộ trạng thái trực tiếp sang Dashboard!
+            Hệ thống sẽ tự động duyệt các sản phẩm theo <strong>Người phụ trách</strong> hoặc <strong>Danh mục</strong> chọn, tự điền tên người đánh giá ngẫu nhiên, tự chọn mẫu câu nhận xét tương ứng và đồng bộ trạng thái trực tiếp sang Dashboard!
           </p>
 
           <div class="autopilot-features-grid">
-            <div class="feature-item" id="featureItemCatCount"><i class="fa-solid fa-check" style="color:var(--success);"></i> Chạy chuẩn theo Danh mục / Bộ lọc đã chọn</div>
+            <div class="feature-item" id="featureItemCatCount"><i class="fa-solid fa-check" style="color:var(--success);"></i> Chạy chuẩn theo Người phụ trách / Danh mục đã chọn</div>
             <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Phân công chuẩn theo Bộ phận chọn</div>
             <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Tự động luân phiên Mẫu câu 1 / Mẫu 2</div>
             <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> SĐT 0334333777 & Email chung</div>
@@ -561,13 +567,16 @@
             <div id="autoPilotCurrentItemText" style="font-size:13px; color:var(--primary); margin-top:8px; font-weight:700;"></div>
           </div>
 
-          <!-- Action Buttons -->
+          <!-- Action Buttons Grid -->
           <div class="form-actions" style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;">
-            <button id="btnStartAutoPilot" class="btn btn-warning" style="flex:1;">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> BẮT ĐẦU CHẠY THEO BỘ LỌC DANH MỤC
+            <button id="btnStartAutoPilotStaff" class="btn btn-warning" style="flex:1; min-width: 220px; background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+              <i class="fa-solid fa-user-gear"></i> 👤 CHẠY THEO NGƯỜI PHỤ TRÁCH
             </button>
-            <button id="btnStartAutoPilotAll" class="btn btn-primary" style="flex:1;">
-              <i class="fa-solid fa-rocket"></i> CHẠY TOÀN BỘ 128 SẢN PHẨM
+            <button id="btnStartAutoPilot" class="btn btn-warning" style="flex:1; min-width: 220px;">
+              <i class="fa-solid fa-layer-group"></i> 📁 CHẠY THEO DANH MỤC
+            </button>
+            <button id="btnStartAutoPilotAll" class="btn btn-primary" style="flex:1; min-width: 220px; background: linear-gradient(135deg, #059669, #047857);">
+              <i class="fa-solid fa-rocket"></i> ⚡ CHẠY TOÀN BỘ 128 SP
             </button>
             <button id="btnStopAutoPilot" class="btn btn-danger" style="display: none; width:100%;">
               <i class="fa-solid fa-circle-stop"></i> DỪNG TIẾN TRÌNH AUTO-PILOT

@@ -189,6 +189,47 @@
       white-space: nowrap;
     }
 
+    .header-nav-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      width: 100%;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .nav-tab-btn {
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.03);
+      border: 1px solid var(--card-border);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    .nav-tab-btn.gold {
+      color: var(--accent-gold);
+    }
+
+    .nav-tab-btn:hover:not(.active) {
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--primary);
+    }
+
     .dept-switch-container {
       display: flex;
       gap: 10px;
@@ -587,14 +628,24 @@
           <button id="btnGlobalAutoTemplate" class="global-auto-template-btn">
             <i class="fa-solid fa-lightbulb"></i> 💡 Tự Điền Mẫu 1: TẮT
           </button>
-          <a href="dashboard.html" class="dashboard-link-btn">
-            <i class="fa-solid fa-chart-pie"></i> Bảng Trạng Thái
-          </a>
           <button class="theme-toggle-btn" id="themeToggleBtn">
             <i class="fa-solid fa-moon"></i> <span>Tối</span>
           </button>
         </div>
       </div>
+
+      <!-- Navigation Header Links -->
+      <nav class="header-nav-links">
+        <a href="index.html" class="nav-tab-btn active">
+          <i class="fa-solid fa-pen-to-square"></i> ✍️ Chạy Thủ Công
+        </a>
+        <a href="autopilot.html" class="nav-tab-btn gold">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> ⚡ Chạy Tự Động (Auto-Pilot)
+        </a>
+        <a href="dashboard.html" class="nav-tab-btn">
+          <i class="fa-solid fa-chart-pie"></i> 📊 Bảng Trạng Thái
+        </a>
+      </nav>
     </header>
 
     <!-- Main Content -->
@@ -663,9 +714,6 @@
         </button>
         <button class="tab-btn" data-tab="tabBatch">
           <i class="fa-solid fa-layer-group"></i> Gửi Hàng Loạt
-        </button>
-        <button class="tab-btn gold" data-tab="tabAutoPilot">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Pilot 128 SP
         </button>
       </nav>
 
@@ -785,52 +833,6 @@
             <button id="btnStopBatch" class="btn btn-danger btn-lg" style="display: none;">
               <i class="fa-solid fa-stop"></i> Dừng Lại
             </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 3: AUTO-PILOT BY CATEGORY OR ALL 128 PRODUCTS -->
-      <section class="tab-content" id="tabAutoPilot">
-        <div class="card">
-          <div class="autopilot-card-box">
-            <h2 style="font-size:18px; color:var(--text-main); margin-bottom:6px; display:flex; align-items:center; gap:8px;">
-              <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-gold);"></i> Chế Độ Chạy Tự Động Theo Danh Mục / Toàn Bộ (Auto-Pilot)
-            </h2>
-            <p style="font-size:13px; color:var(--text-muted);" id="autoPilotDescription">
-              Hệ thống sẽ tự động duyệt các sản phẩm theo <strong>Danh mục đang chọn</strong> (hoặc toàn bộ 128 sản phẩm), tự điền tên người đánh giá tự nhiên, tự chọn mẫu câu nhận xét tương ứng và đồng bộ sang Dashboard!
-            </p>
-
-            <div class="autopilot-features-grid">
-              <div class="feature-item" id="featureItemCatCount"><i class="fa-solid fa-check" style="color:var(--success);"></i> Chạy theo Danh mục / Bộ lọc chọn</div>
-              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Phân công chuẩn Bộ phận chọn</div>
-              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Tự bốc Mẫu câu 1 / Mẫu 2 chuẩn</div>
-              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> SĐT 0334333777 & Email chung</div>
-              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Giãn cách ngẫu nhiên (3 - 6 giây)</div>
-              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Tự động đồng bộ sang Dashboard</div>
-            </div>
-
-            <div class="progress-section" id="autoPilotProgressSection" style="display: none;">
-              <div class="progress-info">
-                <span id="autoPilotProgressText">Đang tự động xử lý...</span>
-                <span id="autoPilotProgressPercent">0%</span>
-              </div>
-              <div class="progress-bar-bg">
-                <div class="progress-bar-fill" id="autoPilotProgressBarFill"></div>
-              </div>
-              <div id="autoPilotCurrentItemText" style="font-size:12px; color:var(--text-muted); margin-top:6px; font-weight:600;"></div>
-            </div>
-
-            <div class="form-actions" style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
-              <button id="btnStartAutoPilot" class="btn btn-warning btn-lg" style="flex:1;">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> BẮT ĐẦU CHẠY TỰ ĐỘNG (DANH MỤC HIỆN TẠI)
-              </button>
-              <button id="btnStartAutoPilotAll" class="btn btn-primary btn-lg" style="flex:1;">
-                <i class="fa-solid fa-rocket"></i> CHẠY TOÀN BỘ 128 SẢN PHẨM
-              </button>
-              <button id="btnStopAutoPilot" class="btn btn-danger btn-lg" style="display: none; width:100%;">
-                <i class="fa-solid fa-circle-stop"></i> DỪNG CHẠY TỰ ĐỘNG
-              </button>
-            </div>
           </div>
         </div>
       </section>

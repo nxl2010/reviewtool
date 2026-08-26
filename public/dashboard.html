@@ -316,18 +316,32 @@
 <body>
   <div class="container">
     <!-- Header -->
-    <header class="header-card">
-      <div class="header-title">
-        <h1>
-          <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> Dashboard - Tool nhập đánh giá
-          <span class="live-pulse-badge"><span class="pulse-dot"></span> Tự động đồng bộ 3s</span>
-        </h1>
-        <p>by @nxlzero • Thống kê chi tiết tiến độ hoàn thành đánh giá thực tế</p>
+    <header class="header-card" style="flex-direction: column; align-items: stretch; gap: 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div class="header-title">
+          <h1>
+            <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> Dashboard - Tool nhập đánh giá
+            <span class="live-pulse-badge"><span class="pulse-dot"></span> Tự động đồng bộ 3s</span>
+          </h1>
+          <p>by @nxlzero • Thống kê chi tiết tiến độ hoàn thành đánh giá thực tế</p>
+        </div>
+        <div class="header-actions">
+          <button id="btnResetDashboard" class="btn-danger"><i class="fa-solid fa-rotate-left"></i> Reset Bảng</button>
+        </div>
       </div>
-      <div class="header-actions">
-        <button id="btnResetDashboard" class="btn-danger"><i class="fa-solid fa-rotate-left"></i> Reset Bảng</button>
-        <a href="index.html" class="nav-btn"><i class="fa-solid fa-arrow-left"></i> Tool Gửi</a>
-      </div>
+
+      <!-- Navigation Header Links -->
+      <nav style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%; padding-top: 12px; border-top: 1px solid var(--card-border);">
+        <a href="index.html" class="nav-btn" style="background: rgba(0, 0, 0, 0.03); color: var(--text-muted); border: 1px solid var(--card-border); flex: none;">
+          <i class="fa-solid fa-pen-to-square"></i> ✍️ Chạy Thủ Công
+        </a>
+        <a href="autopilot.html" class="nav-btn" style="background: rgba(217, 119, 6, 0.1); color: var(--warning); border: 1px solid rgba(217, 119, 6, 0.3); flex: none;">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> ⚡ Chạy Tự Động (Auto-Pilot)
+        </a>
+        <a href="dashboard.html" class="nav-btn" style="background: var(--primary); color: #fff; flex: none;">
+          <i class="fa-solid fa-chart-pie"></i> 📊 Bảng Trạng Thái
+        </a>
+      </nav>
     </header>
 
     <!-- Department Switcher Buttons (Default to Kỹ Thuật) -->

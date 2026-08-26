@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Auto-Pilot Tự Động 100% - Tool nhập đánh giá Kuchen</title>
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- SheetJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      /* Light Theme (Default) */
+      --bg-dark: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #059669;
+      --success-hover: #047857;
+      --danger: #dc2626;
+      --accent-gold: #d97706;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+
+    [data-theme="dark"] {
+      --bg-dark: #0b0f19;
+      --card-bg: rgba(23, 32, 54, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --success-hover: #059669;
+      --danger: #ef4444;
+      --accent-gold: #f59e0b;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --input-bg: rgba(15, 23, 42, 0.9);
+      --input-border: rgba(255, 255, 255, 0.12);
+      --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.37);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(5, 150, 105, 0.08) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 16px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 1050px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .app-header {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
+      flex-shrink: 0;
+    }
+
+    .app-header h1 { font-size: 19px; font-weight: 700; color: var(--text-main); line-height: 1.3; }
+    .subtitle { font-size: 12px; color: var(--text-muted); }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    @media (min-width: 640px) {
+      .header-actions { width: auto; }
+    }
+
+    .global-auto-template-btn {
+      flex: 1;
+      background: rgba(217, 119, 6, 0.1);
+      border: 1.5px solid rgba(217, 119, 6, 0.4);
+      color: var(--accent-gold);
+      padding: 10px 14px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 44px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .global-auto-template-btn.active-on {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #ffffff;
+      border-color: #d97706;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+    }
+
+    .theme-toggle-btn {
+      background: rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 10px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 44px;
+      white-space: nowrap;
+    }
+
+    .header-nav-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      width: 100%;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .nav-tab-btn {
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.03);
+      border: 1px solid var(--card-border);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    .nav-tab-btn.gold.active {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #ffffff;
+      border-color: #d97706;
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
+    }
+
+    .nav-tab-btn:hover:not(.active) {
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--primary);
+    }
+
+    .dept-switch-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .dept-btn {
+      flex: 1;
+      padding: 12px 16px;
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      min-height: 46px;
+    }
+
+    .dept-btn.active {
+      background: rgba(37, 99, 235, 0.08);
+      border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .card-header-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-header-title h3 { font-size: 16px; }
+    .accent-icon { color: var(--primary); font-size: 18px; }
+
+    .staff-selector-box {
+      background: rgba(245, 158, 11, 0.05);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .staff-row {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    @media (min-width: 640px) {
+      .staff-row { flex-direction: row; }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    input, select {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 15px;
+      min-height: 46px;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .badge-user {
+      background: rgba(217, 119, 6, 0.1);
+      border: 1px solid rgba(217, 119, 6, 0.3);
+      color: var(--accent-gold);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 12px;
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+    }
+
+    .autopilot-card-box {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(16, 185, 129, 0.08));
+      border: 1.5px solid rgba(245, 158, 11, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+
+    .autopilot-features-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    @media (min-width: 640px) {
+      .autopilot-features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .feature-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    .progress-section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .progress-info { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .progress-bar-bg { width: 100%; height: 14px; background: rgba(0, 0, 0, 0.1); border-radius: 7px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #f59e0b, #10b981); transition: width 0.3s ease; }
+
+    .btn {
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      min-height: 48px;
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
+    }
+
+    .btn-warning:hover { opacity: 0.95; transform: translateY(-1px); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-primary:hover { opacity: 0.95; transform: translateY(-1px); }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+    }
+
+    /* Terminal Log */
+    .terminal-card {
+      background: #0f172a;
+      color: #38bdf8;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12.5px;
+      max-height: 320px;
+      overflow-y: auto;
+      margin-top: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .log-line { margin-bottom: 4px; line-height: 1.4; word-break: break-word; }
+    .log-line.info { color: #38bdf8; }
+    .log-line.success { color: #4ade80; font-weight: 700; }
+    .log-line.warning { color: #fbbf24; }
+    .log-line.error { color: #f87171; font-weight: 700; }
+
+    .terminal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      font-size: 12px;
+      font-family: var(--font);
+    }
+
+    #hidden_submit_iframe { display: none; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo-group">
+          <div class="logo-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+          <div>
+            <h1>Tool Chạy Tự Động (Auto-Pilot)</h1>
+            <p class="subtitle">by @nxlzero • Tự động gửi đánh giá 100% • Tối ưu chống Spam</p>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <button id="btnGlobalAutoTemplate" class="global-auto-template-btn">
+            <i class="fa-solid fa-lightbulb"></i> 💡 Tự Điền Mẫu 1: TẮT
+          </button>
+          <button class="theme-toggle-btn" id="themeToggleBtn">
+            <i class="fa-solid fa-moon"></i> <span>Tối</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Header Links -->
+      <nav class="header-nav-links">
+        <a href="index.html" class="nav-tab-btn">
+          <i class="fa-solid fa-pen-to-square"></i> ✍️ Chạy Thủ Công
+        </a>
+        <a href="autopilot.html" class="nav-tab-btn gold active">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> ⚡ Chạy Tự Động (Auto-Pilot)
+        </a>
+        <a href="dashboard.html" class="nav-tab-btn">
+          <i class="fa-solid fa-chart-pie"></i> 📊 Bảng Trạng Thái
+        </a>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <section class="card">
+        <div class="card-header">
+          <div class="card-header-title">
+            <i class="fa-solid fa-sliders accent-icon" style="color: var(--accent-gold);"></i>
+            <h3>Cấu Hình Phạm Vi Chạy Auto-Pilot</h3>
+          </div>
+        </div>
+
+        <!-- Department Switcher Buttons -->
+        <div class="dept-switch-container">
+          <button type="button" class="dept-btn" id="btnDeptCSKH">
+            <i class="fa-solid fa-headset"></i> Bộ Phận CSKH (7 người)
+          </button>
+          <button type="button" class="dept-btn active" id="btnDeptKyThuat">
+            <i class="fa-solid fa-wrench"></i> Bộ Phận Kỹ Thuật (13 người)
+          </button>
+        </div>
+
+        <!-- Scope Filter Box -->
+        <div class="staff-selector-box">
+          <div class="staff-row" style="margin-bottom: 10px;">
+            <div class="form-group" style="flex: 1;">
+              <label for="categorySelect"><i class="fa-solid fa-layer-group"></i> Chọn Danh Mục Sản Phẩm Để Chạy:</label>
+              <select id="categorySelect">
+                <option value="ALL">-- Tất cả danh mục (15 danh mục / 128 sản phẩm) --</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="staffSelect"><i class="fa-solid fa-user"></i> Lọc Theo Người Phụ Trách:</label>
+              <select id="staffSelect">
+                <option value="ALL">-- Tất cả sản phẩm (128 sản phẩm) --</option>
+              </select>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span class="badge-user" id="categoryProductCountBadge" style="flex: 1;">Danh mục: Tất cả (15 danh mục)</span>
+            <span class="badge-user" id="staffProductCountBadge" style="flex: 1;">Phụ trách: Tất cả sản phẩm</span>
+          </div>
+        </div>
+
+        <!-- Auto-Pilot Central Console Card -->
+        <div class="autopilot-card-box">
+          <h2 style="font-size:18px; color:var(--text-main); margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-robot" style="color:var(--accent-gold);"></i> Bảng Điều Khiển Auto-Pilot Tự Động 100%
+          </h2>
+          <p style="font-size:13px; color:var(--text-muted);" id="autoPilotDescription">
+            Hệ thống sẽ tự động duyệt các sản phẩm theo <strong>Bộ lọc đang chọn</strong> (hoặc toàn bộ 128 sản phẩm), tự điền tên người đánh giá ngẫu nhiên, tự chọn mẫu câu nhận xét tương ứng và đồng bộ trạng thái trực tiếp sang Dashboard!
+          </p>
+
+          <div class="autopilot-features-grid">
+            <div class="feature-item" id="featureItemCatCount"><i class="fa-solid fa-check" style="color:var(--success);"></i> Chạy chuẩn theo Danh mục / Bộ lọc đã chọn</div>
+            <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Phân công chuẩn theo Bộ phận chọn</div>
+            <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Tự động luân phiên Mẫu câu 1 / Mẫu 2</div>
+            <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> SĐT 0334333777 & Email chung</div>
+            <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Giãn cách ngẫu nhiên (3 - 6 giây) chống Spam</div>
+            <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Tự động đồng bộ trạng thái sang Dashboard</div>
+          </div>
+
+          <!-- Progress Section -->
+          <div class="progress-section" id="autoPilotProgressSection" style="display: none;">
+            <div class="progress-info">
+              <span id="autoPilotProgressText">Đang tự động xử lý...</span>
+              <span id="autoPilotProgressPercent" style="color:var(--accent-gold); font-size:16px;">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="autoPilotProgressBarFill"></div>
+            </div>
+            <div id="autoPilotCurrentItemText" style="font-size:13px; color:var(--primary); margin-top:8px; font-weight:700;"></div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-actions" style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="btnStartAutoPilot" class="btn btn-warning" style="flex:1;">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> BẮT ĐẦU CHẠY THEO BỘ LỌC DANH MỤC
+            </button>
+            <button id="btnStartAutoPilotAll" class="btn btn-primary" style="flex:1;">
+              <i class="fa-solid fa-rocket"></i> CHẠY TOÀN BỘ 128 SẢN PHẨM
+            </button>
+            <button id="btnStopAutoPilot" class="btn btn-danger" style="display: none; width:100%;">
+              <i class="fa-solid fa-circle-stop"></i> DỪNG TIẾN TRÌNH AUTO-PILOT
+            </button>
+          </div>
+        </div>
+
+        <!-- Terminal Log Box -->
+        <div class="terminal-card">
+          <div class="terminal-header">
+            <span><i class="fa-solid fa-terminal"></i> Nhật Ký Tiến Trình Realtime (Terminal Log)</span>
+            <button id="btnClearLog" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:11px;">
+              <i class="fa-solid fa-trash-can"></i> Xóa log
+            </button>
+          </div>
+          <div id="logTerminal"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Hidden Iframe Target -->
+    <iframe name="hidden_submit_iframe" id="hidden_submit_iframe"></iframe>
+  </div>
+
+  <script src="autopilot.js"></script>
+
+  <script>
+    // Theme Toggle Handler
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const htmlEl = document.documentElement;
+
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = htmlEl.getAttribute('data-theme');
+      if (currentTheme === 'light') {
+        htmlEl.setAttribute('data-theme', 'dark');
+        themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i> <span>Sáng</span>';
+      } else {
+        htmlEl.setAttribute('data-theme', 'light');
+        themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i> <span>Tối</span>';
+      }
+    });
+  </script>
+</body>
+</html>

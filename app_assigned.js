@@ -39,7 +39,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnDeptKyThuat = document.getElementById('btnDeptKyThuat');
 
   const staffSelect = document.getElementById('staffSelect');
+  const categorySelect = document.getElementById('categorySelect');
   const staffProductCountBadge = document.getElementById('staffProductCountBadge');
+  const categoryProductCountBadge = document.getElementById('categoryProductCountBadge');
   const excelProductSelect = document.getElementById('excelProductSelect');
   const excelFileInput = document.getElementById('excelFileInput');
   const productUrlInput = document.getElementById('productUrlInput');
@@ -74,6 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Auto-Pilot elements
   const btnStartAutoPilot = document.getElementById('btnStartAutoPilot');
+  const btnStartAutoPilotAll = document.getElementById('btnStartAutoPilotAll');
   const btnStopAutoPilot = document.getElementById('btnStopAutoPilot');
   const autoPilotProgressSection = document.getElementById('autoPilotProgressSection');
   const autoPilotProgressText = document.getElementById('autoPilotProgressText');
@@ -193,7 +196,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     populateStaffDropdown(staffList);
-    filterProductsByStaff('ALL');
+    populateCategoryDropdown(allProducts);
+    filterProducts();
   }
 
   // Save completion status locally AND sync to Global Worker Database
@@ -324,7 +328,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function populateStaffDropdown(sList) {
     const deptTitle = currentDept === 'cskh' ? 'CSKH' : 'Kỹ Thuật';
-    staffSelect.innerHTML = `<option value="ALL">-- Tất cả sản phẩm ${deptTitle} (${allProducts.length} sản phẩm) --</option>`;
+    staffSelect.innerHTML = `<option value="ALL">-- Tất cả người phụ trách ${deptTitle} (${allProducts.length} SP) --</option>`;
     sList.forEach(s => {
       const opt = document.createElement('option');
       opt.value = s.staffName;
@@ -333,27 +337,74 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Handle staff selection change
-  staffSelect.addEventListener('change', () => {
-    const selectedStaff = staffSelect.value;
-    filterProductsByStaff(selectedStaff);
-  });
+  function populateCategoryDropdown(products) {
+    if (!categorySelect) return;
+    categorySelect.innerHTML = '';
+    
+    const categoryCounts = {};
+    products.forEach(p => {
+      const cat = p.category || 'Chưa phân loại';
+      categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+    });
 
-  function filterProductsByStaff(staffName) {
+    const catList = Object.keys(categoryCounts);
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = 'ALL';
+    defaultOpt.textContent = `-- Tất cả danh mục (${catList.length} danh mục / ${products.length} SP) --`;
+    categorySelect.appendChild(defaultOpt);
+
+    catList.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = `📁 ${cat} (${categoryCounts[cat]} SP)`;
+      categorySelect.appendChild(opt);
+    });
+  }
+
+  // Handle staff & category selection change
+  if (staffSelect) {
+    staffSelect.addEventListener('change', () => filterProducts());
+  }
+
+  if (categorySelect) {
+    categorySelect.addEventListener('change', () => filterProducts());
+  }
+
+  function filterProducts() {
+    const selectedStaff = staffSelect ? staffSelect.value : 'ALL';
+    const selectedCat = categorySelect ? categorySelect.value : 'ALL';
+
     excelProductSelect.innerHTML = '';
 
     let filtered = allProducts;
-    if (staffName !== 'ALL') {
-      filtered = allProducts.filter(p => p.assignee === staffName);
-      staffProductCountBadge.textContent = `Phụ trách: ${staffName} (${filtered.length} SP)`;
-      log(`[Phân Công] 👤 Bạn đã chọn nhân viên: "${staffName}". Tìm thấy ${filtered.length} sản phẩm.`, 'success');
-    } else {
-      staffProductCountBadge.textContent = `Tất cả: ${allProducts.length} SP`;
-      log(`[Phân Công] Hiển thị tất cả ${allProducts.length} sản phẩm Kuchen.`, 'info');
+    if (selectedStaff !== 'ALL') {
+      filtered = filtered.filter(p => p.assignee === selectedStaff);
+    }
+    if (selectedCat !== 'ALL') {
+      filtered = filtered.filter(p => (p.category || 'Chưa phân loại') === selectedCat);
     }
 
+    if (staffProductCountBadge) {
+      if (selectedStaff !== 'ALL') {
+        staffProductCountBadge.textContent = `Phụ trách: ${selectedStaff}`;
+      } else {
+        staffProductCountBadge.textContent = `Tất cả người phụ trách (${allProducts.length} SP)`;
+      }
+    }
+
+    if (categoryProductCountBadge) {
+      if (selectedCat !== 'ALL') {
+        categoryProductCountBadge.textContent = `Danh mục: ${selectedCat} (${filtered.length} SP)`;
+      } else {
+        categoryProductCountBadge.textContent = `Tất cả danh mục (${filtered.length} SP)`;
+      }
+    }
+
+    updateAutoPilotUI(selectedCat, selectedStaff, filtered.length);
+
     if (filtered.length === 0) {
-      excelProductSelect.innerHTML = '<option value="">-- Không có sản phẩm nào --</option>';
+      excelProductSelect.innerHTML = '<option value="">-- Không có sản phẩm nào khớp bộ lọc --</option>';
+      log(`[Bộ Lọc] Không tìm thấy sản phẩm nào (Nhân viên: "${selectedStaff}", Danh mục: "${selectedCat}").`, 'warning');
       return;
     }
 
@@ -366,9 +417,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       const opt = document.createElement('option');
       opt.value = p.url;
       const idText = p.productId ? `ID: ${p.productId}` : `STT ${p.stt}`;
-      opt.textContent = `[${idText}] [${p.assignee}] ${p.name} (${p.sku || 'N/A'})`;
+      const catTag = p.category ? `[${p.category}]` : '';
+      opt.textContent = `[${idText}] ${catTag} [${p.assignee}] ${p.name} (${p.sku || 'N/A'})`;
       excelProductSelect.appendChild(opt);
     });
+
+    log(`[Bộ Lọc] Lọc thành công ${filtered.length} sản phẩm (Nhân viên: "${selectedStaff}", Danh mục: "${selectedCat}").`, 'info');
+  }
+
+  function updateAutoPilotUI(selectedCat, selectedStaff, count) {
+    if (btnStartAutoPilot) {
+      if (selectedCat !== 'ALL') {
+        btnStartAutoPilot.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> BẮT ĐẦU CHẠY DANH MỤC "${selectedCat}" (${count} SP)`;
+      } else if (selectedStaff !== 'ALL') {
+        btnStartAutoPilot.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> BẮT ĐẦU CHẠY CHO "${selectedStaff}" (${count} SP)`;
+      } else {
+        btnStartAutoPilot.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> BẮT ĐẦU CHẠY TỰ ĐỘNG BỘ LỌC HIỆN TẠI (${count} SP)`;
+      }
+    }
   }
 
   // Update Template Options
@@ -693,111 +759,132 @@ document.addEventListener('DOMContentLoaded', async () => {
     stopBatch();
   });
 
-  // AUTO-PILOT EXECUTION FOR ALL 128 PRODUCTS (PROTECTED WITH PASSWORD: nxlzero@gmail.com)
-  if (btnStartAutoPilot) {
-    btnStartAutoPilot.addEventListener('click', async () => {
-      if (allProducts.length === 0) {
-        alert('Đang tải danh sách 128 sản phẩm, vui lòng thử lại sau 2 giây!');
+  // AUTO-PILOT EXECUTION FOR CATEGORY / FILTERED / ALL PRODUCTS
+  async function runAutoPilotLoop(productList, scopeName) {
+    if (!productList || productList.length === 0) {
+      alert('Không có sản phẩm nào trong bộ lọc để chạy!');
+      return;
+    }
+
+    // Password verification prompt for Auto-Pilot
+    const pass = prompt(`🔐 VUI LÒNG NHẬP MẬT KHẨU ĐỂ KÍCH HOẠT CHẾ ĐỘ AUTO-PILOT CHẠY (${scopeName}):`);
+    if (pass === null) return; // User cancelled
+
+    try {
+      const verifyRes = await fetch('/api/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pass })
+      });
+      const verifyJson = await verifyRes.json();
+      if (!verifyJson.success) {
+        alert('❌ Mật khẩu không chính xác! Không thể kích hoạt chế độ Auto-Pilot.');
         return;
       }
+    } catch (e) {
+      alert('❌ Lỗi kết nối tới Server để xác thực mật khẩu!');
+      return;
+    }
 
-      // Password verification prompt for Auto-Pilot
-      const pass = prompt('🔐 VUI LÒNG NHẬP MẬT KHẨU ĐỂ KÍCH HOẠT CHẾ ĐỘ AUTO-PILOT 128 SẢN PHẨM:');
-      if (pass === null) return; // User cancelled
+    const confirmRun = confirm(`🚀 BẠN CÓ CHẮC CHẮN MUỐN BẮT ĐẦU CHẠY TỰ ĐỘNG CHO ${productList.length} SẢN PHẨM (${scopeName})?\n\nHệ thống sẽ tự động gửi đánh giá từng sản phẩm và cập nhật trực tiếp lên Dashboard chung!`);
+    if (!confirmRun) return;
 
-      // Verify password via API
-      try {
-        const verifyRes = await fetch('/api/verify-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: pass })
-        });
-        const verifyJson = await verifyRes.json();
-        if (!verifyJson.success) {
-          alert('❌ Mật khẩu không chính xác! Không thể kích hoạt chế độ Auto-Pilot.');
-          return;
-        }
-      } catch (e) {
-        alert('❌ Lỗi kết nối tới Server để xác thực mật khẩu!');
-        return;
-      }
+    isAutoPilotRunning = true;
+    btnStartAutoPilot.style.display = 'none';
+    if (btnStartAutoPilotAll) btnStartAutoPilotAll.style.display = 'none';
+    btnStopAutoPilot.style.display = 'inline-flex';
+    autoPilotProgressSection.style.display = 'block';
 
-      const confirmRun = confirm('🚀 BẠN CÓ CHẮC CHẮN MUỐN BẮT ĐẦU CHẠY TỰ ĐỘNG CHO TOÀN BỘ 128 SẢN PHẨM KUCHEN?\n\nHệ thống sẽ tự động gửi đánh giá từng sản phẩm và cập nhật trực tiếp lên Dashboard chung!');
-      if (!confirmRun) return;
+    log(`[Auto-Pilot] 🚀 Bắt đầu tiến trình chạy tự động ${productList.length} sản phẩm (${scopeName})...`, 'info');
 
-      isAutoPilotRunning = true;
-      btnStartAutoPilot.style.display = 'none';
-      btnStopAutoPilot.style.display = 'inline-flex';
-      autoPilotProgressSection.style.display = 'block';
+    for (let i = 0; i < productList.length; i++) {
+      if (!isAutoPilotRunning) break;
 
-      log(`[Auto-Pilot] 🚀 Bắt đầu tiến trình chạy tự động toàn bộ ${allProducts.length} sản phẩm Kuchen (${currentDept.toUpperCase()})...`, 'info');
-
-      for (let i = 0; i < allProducts.length; i++) {
-        if (!isAutoPilotRunning) break;
-
-        const product = allProducts[i];
-        const pid = product.productId || (product.stt === 4 || product.stt === 100 ? '9778' : product.stt);
-        
-        // Pick random realistic Vietnamese name
-        const randomName = sampleReviewerNames[Math.floor(Math.random() * sampleReviewerNames.length)];
-        
-        // Pick template 1 or template 2 or fallback
-        let reviewText = product.template1 || product.template2;
-        if (product.template1 && product.template2) {
-          reviewText = Math.random() > 0.5 ? product.template1 : product.template2;
-        }
-        if (!reviewText) {
-          reviewText = 'Sản phẩm dùng rất êm và bền, chất lượng chuẩn Kuchen, giao hàng nhanh chóng.';
-        }
-
-        const pct = Math.round(((i + 1) / allProducts.length) * 100);
-        autoPilotProgressBarFill.style.width = `${pct}%`;
-        autoPilotProgressPercent.textContent = `${pct}%`;
-        autoPilotProgressText.textContent = `Đã xử lý ${i + 1}/${allProducts.length} sản phẩm`;
-        autoPilotCurrentItemText.textContent = `⚡ [STT ${product.stt}] Đang gửi cho "${product.name}" (${product.assignee})...`;
-
-        log(`[Auto-Pilot] [${i+1}/${allProducts.length}] Đang gửi cho SP STT ${product.stt} (ID: ${pid}) - "${randomName}"...`, 'info');
-
-        const result = await submitReviewPayloadWithFeedback({
-          pid: pid,
-          author: randomName,
-          phone: '0334333777',
-          email: 'kuchenvietnam@gmail.com',
-          comment: reviewText,
-          rating: '5',
-          productUrl: product.url
-        });
-
-        // Record completion on Global Cloud & LocalStorage
-        recordCompletion(pid, {
-          stt: product.stt,
-          name: product.name,
-          url: product.url,
-          assignee: product.assignee,
-          author: randomName,
-          phone: '0334333777',
-          comment: reviewText,
-          rating: 5
-        });
-
-        log(`[Auto-Pilot] ✅ [${i+1}/${allProducts.length}] Thành công! (Code ${result.status})`, 'success');
-
-        // Random delay between 3 - 6 seconds for anti-spam safety
-        if (i < allProducts.length - 1 && isAutoPilotRunning) {
-          const delaySec = Math.floor(Math.random() * 4) + 3; // 3 to 6s
-          autoPilotCurrentItemText.textContent = `⏳ Chờ ${delaySec}s để chống Spam trước khi sang sản phẩm tiếp theo...`;
-          await new Promise(r => setTimeout(r, delaySec * 1000));
-        }
-      }
-
-      if (isAutoPilotRunning) {
-        log('[Auto-Pilot] 🎉 ĐÃ HOÀN THÀNH TỰ ĐỘNG TOÀN BỘ 128 SẢN PHẨM KUCHEN! Trạng thái đã nhảy xanh trên Dashboard.', 'success');
-        alert('🎉 ĐÃ HOÀN THÀNH TỰ ĐỘNG TOÀN BỘ 128 SẢN PHẨM KUCHEN!\n\nToàn bộ bảng Dashboard đã nhảy xanh 100% hoàn thành.');
-      }
+      const product = productList[i];
+      const pid = product.productId || (product.stt === 4 || product.stt === 100 ? '9778' : product.stt);
       
-      stopAutoPilot();
-    });
+      const randomName = sampleReviewerNames[Math.floor(Math.random() * sampleReviewerNames.length)];
+      
+      let reviewText = product.template1 || product.template2;
+      if (product.template1 && product.template2) {
+        reviewText = Math.random() > 0.5 ? product.template1 : product.template2;
+      }
+      if (!reviewText) {
+        reviewText = 'Sản phẩm dùng rất êm và bền, chất lượng chuẩn Kuchen, giao hàng nhanh chóng.';
+      }
 
+      const pct = Math.round(((i + 1) / productList.length) * 100);
+      autoPilotProgressBarFill.style.width = `${pct}%`;
+      autoPilotProgressPercent.textContent = `${pct}%`;
+      autoPilotProgressText.textContent = `Đã xử lý ${i + 1}/${productList.length} sản phẩm (${scopeName})`;
+      autoPilotCurrentItemText.textContent = `⚡ [STT ${product.stt}] [${product.category || 'Gia dụng'}] Đang gửi cho "${product.name}" (${product.assignee})...`;
+
+      log(`[Auto-Pilot] [${i+1}/${productList.length}] Đang gửi cho SP STT ${product.stt} (ID: ${pid}) - "${randomName}"...`, 'info');
+
+      const result = await submitReviewPayloadWithFeedback({
+        pid: pid,
+        author: randomName,
+        phone: '0334333777',
+        email: 'kuchenvietnam@gmail.com',
+        comment: reviewText,
+        rating: '5',
+        productUrl: product.url
+      });
+
+      recordCompletion(pid, {
+        stt: product.stt,
+        name: product.name,
+        url: product.url,
+        assignee: product.assignee,
+        author: randomName,
+        phone: '0334333777',
+        comment: reviewText,
+        rating: 5
+      });
+
+      log(`[Auto-Pilot] ✅ [${i+1}/${productList.length}] Thành công! (Code ${result.status})`, 'success');
+
+      if (i < productList.length - 1 && isAutoPilotRunning) {
+        const delaySec = Math.floor(Math.random() * 4) + 3;
+        autoPilotCurrentItemText.textContent = `⏳ Chờ ${delaySec}s để chống Spam trước khi sang sản phẩm tiếp theo...`;
+        await new Promise(r => setTimeout(r, delaySec * 1000));
+      }
+    }
+
+    if (isAutoPilotRunning) {
+      log(`[Auto-Pilot] 🎉 ĐÃ HOÀN THÀNH TỰ ĐỘNG ${productList.length} SẢN PHẨM (${scopeName})! Trạng thái đã nhảy xanh trên Dashboard.`, 'success');
+      alert(`🎉 ĐÃ HOÀN THÀNH TỰ ĐỘNG ${productList.length} SẢN PHẨM (${scopeName})!\n\nTiến độ đã được đồng bộ trực tiếp lên Dashboard.`);
+    }
+    
+    stopAutoPilot();
+  }
+
+  // AUTO-PILOT BUTTON LISTENERS
+  if (btnStartAutoPilot) {
+    btnStartAutoPilot.addEventListener('click', () => {
+      const selectedStaff = staffSelect ? staffSelect.value : 'ALL';
+      const selectedCat = categorySelect ? categorySelect.value : 'ALL';
+      
+      let filtered = allProducts;
+      if (selectedStaff !== 'ALL') filtered = filtered.filter(p => p.assignee === selectedStaff);
+      if (selectedCat !== 'ALL') filtered = filtered.filter(p => (p.category || 'Chưa phân loại') === selectedCat);
+
+      let scopeName = 'Bộ Lọc Hiện Tại';
+      if (selectedCat !== 'ALL') scopeName = `Danh Mục: ${selectedCat}`;
+      else if (selectedStaff !== 'ALL') scopeName = `Nhân Viên: ${selectedStaff}`;
+      else scopeName = '128 Sản Phẩm';
+
+      runAutoPilotLoop(filtered, scopeName);
+    });
+  }
+
+  if (btnStartAutoPilotAll) {
+    btnStartAutoPilotAll.addEventListener('click', () => {
+      runAutoPilotLoop(allProducts, 'Toàn bộ 128 Sản Phẩm');
+    });
+  }
+
+  if (btnStopAutoPilot) {
     btnStopAutoPilot.addEventListener('click', () => {
       log('[Auto-Pilot] ⏹️ Đã dừng tiến trình chạy tự động.', 'warning');
       stopAutoPilot();
@@ -806,7 +893,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function stopAutoPilot() {
     isAutoPilotRunning = false;
-    btnStartAutoPilot.style.display = 'inline-flex';
-    btnStopAutoPilot.style.display = 'none';
+    if (btnStartAutoPilot) btnStartAutoPilot.style.display = 'inline-flex';
+    if (btnStartAutoPilotAll) btnStartAutoPilotAll.style.display = 'inline-flex';
+    if (btnStopAutoPilot) btnStopAutoPilot.style.display = 'none';
   }
 });

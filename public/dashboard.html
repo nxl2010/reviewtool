@@ -368,6 +368,12 @@
     <!-- Filters -->
     <section class="filter-card">
       <div class="filter-group">
+        <label><i class="fa-solid fa-layer-group"></i> Danh mục sản phẩm:</label>
+        <select id="categoryFilter">
+          <option value="ALL">-- Tất cả danh mục --</option>
+        </select>
+      </div>
+      <div class="filter-group">
         <label><i class="fa-solid fa-user"></i> Người phụ trách:</label>
         <select id="staffFilter">
           <option value="ALL">-- Tất cả nhân viên --</option>
@@ -402,6 +408,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
+      const categoryFilter = document.getElementById('categoryFilter');
       const staffFilter = document.getElementById('staffFilter');
       const searchInput = document.getElementById('searchInput');
       const statusTableBody = document.getElementById('statusTableBody');
@@ -455,6 +462,7 @@
         } catch (e) {
           console.warn('Status file loading...');
         }
+        populateCategoryFilter();
         populateStaffFilter();
       }
 
@@ -494,6 +502,19 @@
         });
 
         renderTable(currentStatusData);
+      }
+
+      // Populate Category Filter
+      function populateCategoryFilter() {
+        if (!categoryFilter) return;
+        categoryFilter.innerHTML = '<option value="ALL">-- Tất cả danh mục --</option>';
+        const catNames = Array.from(new Set(initialStatusData.map(d => d.category).filter(Boolean)));
+        catNames.forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat;
+          opt.textContent = `📁 ${cat}`;
+          categoryFilter.appendChild(opt);
+        });
       }
 
       // Populate Staff Filter
@@ -577,17 +598,20 @@
       }, 3000);
 
       // Filter events
+      if (categoryFilter) categoryFilter.addEventListener('change', filterData);
       staffFilter.addEventListener('change', filterData);
       searchInput.addEventListener('input', filterData);
 
       function filterData() {
+        const cat = categoryFilter ? categoryFilter.value : 'ALL';
         const staff = staffFilter.value;
         const query = searchInput.value.toLowerCase().trim();
 
         const filtered = currentStatusData.filter(d => {
+          const matchCat = cat === 'ALL' || d.category === cat;
           const matchStaff = staff === 'ALL' || d.assignee === staff;
           const matchQuery = !query || d.name.toLowerCase().includes(query) || (d.sku && d.sku.toLowerCase().includes(query));
-          return matchStaff && matchQuery;
+          return matchCat && matchStaff && matchQuery;
         });
 
         renderTable(filtered);

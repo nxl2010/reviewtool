@@ -621,18 +621,25 @@
           </button>
         </div>
 
-        <!-- Staff Selector -->
+        <!-- Staff & Category Selector -->
         <div class="staff-selector-box">
-          <div class="staff-row">
-            <div class="form-group">
-              <label for="staffSelect"><i class="fa-solid fa-user"></i> Bạn là ai? (Chọn tên người phụ trách):</label>
+          <div class="staff-row" style="margin-bottom: 10px;">
+            <div class="form-group" style="flex: 1;">
+              <label for="categorySelect"><i class="fa-solid fa-layer-group"></i> Chọn Danh Mục Sản Phẩm:</label>
+              <select id="categorySelect">
+                <option value="ALL">-- Tất cả danh mục (15 danh mục / 128 sản phẩm) --</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="staffSelect"><i class="fa-solid fa-user"></i> Bạn là ai? (Chọn người phụ trách):</label>
               <select id="staffSelect">
                 <option value="ALL">-- Tất cả sản phẩm (128 sản phẩm) --</option>
               </select>
             </div>
-            <div style="display: flex; align-items: flex-end;">
-              <span class="badge-user" id="staffProductCountBadge">Đã giao: 128 sản phẩm</span>
-            </div>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span class="badge-user" id="categoryProductCountBadge" style="flex: 1;">Danh mục: Tất cả (15 danh mục)</span>
+            <span class="badge-user" id="staffProductCountBadge" style="flex: 1;">Đã giao: 128 sản phẩm</span>
           </div>
         </div>
 
@@ -782,19 +789,19 @@
         </div>
       </section>
 
-      <!-- TAB 3: AUTO-PILOT ALL 128 PRODUCTS -->
+      <!-- TAB 3: AUTO-PILOT BY CATEGORY OR ALL 128 PRODUCTS -->
       <section class="tab-content" id="tabAutoPilot">
         <div class="card">
           <div class="autopilot-card-box">
             <h2 style="font-size:18px; color:var(--text-main); margin-bottom:6px; display:flex; align-items:center; gap:8px;">
-              <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-gold);"></i> Chế Độ Chạy Tự Động 100% (Auto-Pilot 128 Sản Phẩm)
+              <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-gold);"></i> Chế Độ Chạy Tự Động Theo Danh Mục / Toàn Bộ (Auto-Pilot)
             </h2>
-            <p style="font-size:13px; color:var(--text-muted);">
-              Chỉ 1-Click duy nhất, hệ thống sẽ tự động duyệt từ sản phẩm 1 đến 128, tự điền tên người đánh giá tự nhiên, tự chọn mẫu câu nhận xét tương ứng và đồng bộ sang Dashboard!
+            <p style="font-size:13px; color:var(--text-muted);" id="autoPilotDescription">
+              Hệ thống sẽ tự động duyệt các sản phẩm theo <strong>Danh mục đang chọn</strong> (hoặc toàn bộ 128 sản phẩm), tự điền tên người đánh giá tự nhiên, tự chọn mẫu câu nhận xét tương ứng và đồng bộ sang Dashboard!
             </p>
 
             <div class="autopilot-features-grid">
-              <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> 128/128 Sản Phẩm Kuchen</div>
+              <div class="feature-item" id="featureItemCatCount"><i class="fa-solid fa-check" style="color:var(--success);"></i> Chạy theo Danh mục / Bộ lọc chọn</div>
               <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Phân công chuẩn Bộ phận chọn</div>
               <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> Tự bốc Mẫu câu 1 / Mẫu 2 chuẩn</div>
               <div class="feature-item"><i class="fa-solid fa-check" style="color:var(--success);"></i> SĐT 0334333777 & Email chung</div>
@@ -813,11 +820,14 @@
               <div id="autoPilotCurrentItemText" style="font-size:12px; color:var(--text-muted); margin-top:6px; font-weight:600;"></div>
             </div>
 
-            <div class="form-actions" style="margin-top:16px;">
-              <button id="btnStartAutoPilot" class="btn btn-warning btn-lg">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> BẮT ĐẦU CHẠY TỰ ĐỘNG 128 SẢN PHẨM
+            <div class="form-actions" style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+              <button id="btnStartAutoPilot" class="btn btn-warning btn-lg" style="flex:1;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> BẮT ĐẦU CHẠY TỰ ĐỘNG (DANH MỤC HIỆN TẠI)
               </button>
-              <button id="btnStopAutoPilot" class="btn btn-danger btn-lg" style="display: none;">
+              <button id="btnStartAutoPilotAll" class="btn btn-primary btn-lg" style="flex:1;">
+                <i class="fa-solid fa-rocket"></i> CHẠY TOÀN BỘ 128 SẢN PHẨM
+              </button>
+              <button id="btnStopAutoPilot" class="btn btn-danger btn-lg" style="display: none; width:100%;">
                 <i class="fa-solid fa-circle-stop"></i> DỪNG CHẠY TỰ ĐỘNG
               </button>
             </div>

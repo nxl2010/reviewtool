@@ -61,11 +61,38 @@ const tenNu = [
   "Thi", "Nhiên", "Chi"
 ];
 
+const westernGenZNames = [
+  "Jenny", "David", "Alex", "Jessica", "Tony", "Sam", "Kevin", "Helen", "Tommy", 
+  "Jack", "Eric", "Katy", "Daniel", "Daisy", "Anna", "Emily", "Ryan", "Sarah", 
+  "Leo", "Brian", "Chloe", "Zoe", "Sunny", "Ruby", "Justin", "Alice", "Hannah", 
+  "Lucas", "Felix", "Mia", "Grace", "Oliver", "Sophia", "Victoria", "Bella"
+];
+
+const genZNicknames = [
+  "Bắp", "Miu", "Susu", "Kem", "Na", "Nhím", "Xoài", "Dâu", "Sữa", "Kẹo", 
+  "Bơ", "Thỏ", "Mây", "Cam", "Mít", "Cút", "Xíu", "Bon", "Tít", "Sôcôla"
+];
+
 function getRandomVietnameseName() {
   const getRandomItem = arr => arr[Math.floor(Math.random() * arr.length)];
-  const isFemale = Math.random() < 0.5;
+  const randType = Math.random();
 
-  // Tỷ lệ ít (6%) không có Họ hoặc không có Tên đệm
+  // 8% Tên Tây kết hợp Họ Việt (ví dụ: Jenny Nguyễn, Alex Trần, Kevin Hoàng)
+  if (randType < 0.08) {
+    const western = getRandomItem(westernGenZNames);
+    const ho = getRandomItem(hoList);
+    return Math.random() < 0.5 ? `${western} ${ho}` : `${ho} ${western}`;
+  }
+
+  // 4% Tên Nickname Gen Z thân mật (ví dụ: Nguyễn Bắp, Lê Miu, Trần Susu)
+  if (randType < 0.12) {
+    const ho = getRandomItem(hoList);
+    const nick = getRandomItem(genZNicknames);
+    return `${ho} ${nick}`;
+  }
+
+  // 88% Tên Việt truyền thống / hiện đại
+  const isFemale = Math.random() < 0.5;
   const includeHo = Math.random() >= 0.06;
   const includeDem = Math.random() >= 0.06;
 
@@ -77,7 +104,6 @@ function getRandomVietnameseName() {
 
   if (includeDem) {
     let tenDem = isFemale ? getRandomItem(tenDemNu) : getRandomItem(tenDemNam);
-    // 30% xác suất có 2 tên đệm
     if (Math.random() < 0.30) {
       const extraList = (isFemale ? tenDemNu : tenDemNam).filter(d => d !== tenDem);
       if (extraList.length > 0) {
@@ -93,9 +119,6 @@ function getRandomVietnameseName() {
   let fullName = parts.join(' ');
 
   // Biến thể viết hoa/viết thường ngẫu nhiên:
-  // 4% tất cả viết thường (ví dụ: nguyễn văn hùng)
-  // 5% từ đầu viết thường (ví dụ: nguyễn Văn Hùng)
-  // 4% từ đệm viết thường (ví dụ: Nguyễn văn Hùng)
   const randCase = Math.random();
   if (randCase < 0.04) {
     fullName = fullName.toLowerCase();

@@ -245,63 +245,108 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnExportExcelReport.addEventListener('click', exportToExcelReport);
   }
 
-  function exportToExcelReport() {
-    const completedReviews = JSON.parse(localStorage.getItem('kuchen_completed_reviews') || '{}');
-    
-    if (!allProducts || allProducts.length === 0) {
-      alert('Không có dữ liệu sản phẩm để xuất báo cáo!');
-      return;
-    }
-
-    const exportData = allProducts.map((p, index) => {
-      const pid = p.productId || p.stt;
-      const rec = completedReviews[pid] || completedReviews[p.stt] || null;
-
-      const isSuccess = rec && (rec.status === 'HOÀN THÀNH' || rec.statusCode === 302 || rec.statusClass === 'completed');
-      const isError429 = rec && (rec.statusCode === 429 || (rec.status && String(rec.status).includes('429')));
-
-      let statusText = '⏳ Chưa gửi đánh giá';
-      if (isSuccess) {
-        statusText = '✅ Thành công (Code 302)';
-      } else if (isError429) {
-        statusText = '❌ Lỗi Rate Limit (Code 429)';
-      } else if (rec) {
-        statusText = `⚠️ Lỗi khác (${rec.status || 'Thất bại'})`;
+  async function exportToExcelReport() {
+    try {
+      if (!allProducts || allProducts.length === 0) {
+        const dept = currentDept || localStorage.getItem('kuchen_selected_dept') || 'kythuat';
+        const pFile = dept === 'cskh' ? 'products_cskh.json' : 'products_kythuat.json';
+        try {
+          const res = await fetch(pFile);
+          if (res.ok) allProducts = await res.json();
+        } catch (e) {}
       }
 
-      return {
-        'STT': p.stt || (index + 1),
-        'Bộ Phận': (currentDept || 'kythuat').toUpperCase(),
-        'Danh Mục': p.category || 'Gia dụng',
-        'Tên Sản Phẩm': p.name || '',
-        'Mã SKU': p.sku || 'N/A',
-        'Nhân Viên Phụ Trách': p.assignee || '',
-        'Trạng Thái Gửi': statusText,
-        'Người Đánh Giá': rec ? (rec.reviewerName || '') : '',
-        'Số Điện Thoại': rec ? (rec.reviewerPhone || '') : '',
-        'Mức Đánh Giá': rec ? (`${rec.rating || 5}★`) : '',
-        'Nội Dung Đánh Giá': rec ? (rec.reviewContent || '') : '',
-        'Thời Gian Hoàn Thành': rec ? (rec.completedAt || '') : '',
-        'URL Sản Phẩm': p.url || ''
-      };
-    });
+      let cloudCompletions = {};
+      try {
+        const statusRes = await fetch('/api/get-status');
+        if (statusRes.ok) {
+          const statusJson = await statusRes.json();
+          cloudCompletions = statusJson.completedProducts || {};
+        }
+      } catch (e) {}
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    worksheet['!cols'] = [
-      { wch: 6 },  { wch: 10 }, { wch: 25 }, { wch: 45 },
-      { wch: 15 }, { wch: 18 }, { wch: 25 }, { wch: 22 },
-      { wch: 14 }, { wch: 10 }, { wch: 50 }, { wch: 20 }, { wch: 50 }
-    ];
+      const localCompletions = JSON.parse(localStorage.getItem('kuchen_completed_reviews') || '{}');
+      const completedReviews = { ...cloudCompletions, ...localCompletions };
 
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Báo Cáo Đánh Giá');
+      if (!allProducts || allProducts.length === 0) {
+        alert('❌ Không tìm thấy dữ liệu sản phẩm để xuất báo cáo!');
+        return;
+      }
 
-    const deptName = (currentDept || 'kythuat').toUpperCase();
-    const today = new Date().toISOString().split('T')[0];
-    const fileName = `Bao_Cao_Kuchen_Review_${deptName}_${today}.xlsx`;
+      const exportData = allProducts.map((p, index) => {
+        const pid = p.productId || p.stt;
+        const rec = completedReviews[pid] || completedReviews[p.stt] || null;
 
-    XLSX.writeFile(workbook, fileName);
-    log(`[Hệ thống] 📥 Đã xuất báo cáo Excel thành công: "${fileName}"`, 'success');
+        const isSuccess = rec && (rec.status === 'HOÀN THÀNH' || rec.statusCode === 302 || rec.statusClass === 'completed');
+        const isError429 = rec && (rec.statusCode === 429 || (rec.status && String(rec.status).includes('429')));
+
+        let statusText = '⏳ Chưa gửi đánh giá';
+        if (isSuccess) {
+          statusText = '✅ Thành công (Code 302)';
+        } else if (isError429) {
+          statusText = '❌ Lỗi Rate Limit (Code 429)';
+        } else if (rec) {
+          statusText = `⚠️ Lỗi khác (${rec.status || 'Thất bại'})`;
+        }
+
+        return {
+          'STT': p.stt || (index + 1),
+          'Bộ Phận': (currentDept || 'kythuat').toUpperCase(),
+          'Danh Mục': p.category || 'Gia dụng',
+          'Tên Sản Phẩm': p.name || '',
+          'Mã SKU': p.sku || 'N/A',
+          'Nhân Viên Phụ Trách': p.assignee || '',
+          'Trạng Thái Gửi': statusText,
+          'Người Đánh Giá': rec ? (rec.reviewerName || rec.author || '') : '',
+          'Số Điện Thoại': rec ? (rec.reviewerPhone || rec.phone || '') : '',
+          'Mức Đánh Giá': rec ? (`${rec.rating || 5}★`) : '',
+          'Nội Dung Đánh Giá': rec ? (rec.reviewContent || rec.comment || '') : '',
+          'Thời Gian Hoàn Thành': rec ? (rec.completedAt || '') : '',
+          'URL Sản Phẩm': p.url || ''
+        };
+      });
+
+      const deptName = (currentDept || 'kythuat').toUpperCase();
+      const today = new Date().toISOString().split('T')[0];
+      const fileName = `Bao_Cao_Kuchen_Review_${deptName}_${today}`;
+
+      if (typeof XLSX !== 'undefined' && XLSX.utils && XLSX.writeFile) {
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        worksheet['!cols'] = [
+          { wch: 6 },  { wch: 10 }, { wch: 25 }, { wch: 45 },
+          { wch: 15 }, { wch: 18 }, { wch: 25 }, { wch: 22 },
+          { wch: 14 }, { wch: 10 }, { wch: 50 }, { wch: 20 }, { wch: 50 }
+        ];
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Báo Cáo Đánh Giá');
+        XLSX.writeFile(workbook, `${fileName}.xlsx`);
+        if (typeof log === 'function') log(`[Hệ thống] 📥 Đã xuất báo cáo Excel thành công: "${fileName}.xlsx"`, 'success');
+        alert(`🎉 Xuất báo cáo Excel thành công!\nTên file: ${fileName}.xlsx`);
+      } else {
+        const headers = Object.keys(exportData[0]);
+        let csvContent = '\uFEFF';
+        csvContent += headers.map(h => `"${h.replace(/"/g, '""')}"`).join(',') + '\n';
+        
+        exportData.forEach(row => {
+          const line = headers.map(h => `"${String(row[h] || '').replace(/"/g, '""')}"`).join(',');
+          csvContent += line + '\n';
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', `${fileName}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        if (typeof log === 'function') log(`[Hệ thống] 📥 Đã xuất báo cáo CSV thành công: "${fileName}.csv"`, 'success');
+        alert(`🎉 Xuất báo cáo thành công (dạng CSV)!\nTên file: ${fileName}.csv`);
+      }
+    } catch (err) {
+      console.error('Export report error:', err);
+      alert(`❌ Lỗi xuất báo cáo: ${err.message}`);
+    }
   }
 
   function log(msg, type = 'info') {

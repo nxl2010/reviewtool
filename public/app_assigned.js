@@ -25,13 +25,96 @@ const staffKyThuatDefault = [
   { "staffName": "Nguyễn Xuân Lâm", "fromStt": 120, "toStt": 128, "count": 9 }
 ];
 
-const sampleReviewerNames = [
-  "Nguyễn Thị Mai", "Lê Văn Hùng", "Trần Thị Lan", "Phạm Quốc Tuấn", "Vũ Hoàng Yến",
-  "Bùi Thanh Hà", "Đỗ Minh Đức", "Ngô Thị Thu", "Hoàng Văn Nam", "Đặng Thị Phương",
-  "Trịnh Quốc Việt", "Phan Thị Thảo", "Bùi Hoàng Nam", "Vũ Thị Hương", "Lương Văn Tâm",
-  "Dương Thị Hải", "Lý Quốc An", "Trần Văn Bình", "Nguyễn Thu Trang", "Đỗ Thị Kim",
-  "Phạm Văn Lâm", "Trần Quốc Huy", "Nguyễn Phương Anh", "Lê Thị Hồng", "Vũ Minh Trí"
+// Data pools for generating rich Vietnamese names (Họ + Tên đệm + Tên)
+const hoList = [
+  "Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Vũ", "Võ", "Đặng", "Bùi", 
+  "Đỗ", "Hồ", "Ngô", "Dương", "Lý", "Phan", "Trịnh", "Đào", "Đinh", "Lâm", 
+  "Phùng", "Mai", "Cao", "Lương", "Trương", "Tạ", "Khương", "Tô", "Quách", "Thái",
+  "Nghiêm", "Văn", "Đinh Lê", "Nguyễn Hoàng", "Trần Đăng", "Lê Vũ", "Phạm Hoàng", "Vũ Ngọc"
 ];
+
+const tenDemNam = [
+  "Văn", "Đức", "Quốc", "Đình", "Minh", "Hoàng", "Hữu", "Tấn", "Trọng", "Công", 
+  "Tuấn", "Viết", "Thái", "Phúc", "Xuân", "Chí", "Thành", "Bảo", "Gia", "Duy", 
+  "Quang", "Ngọc", "Nhật", "Tiến", "Hải", "Khánh", "Anh", "Đăng", "Thế", "Thành"
+];
+
+const tenNam = [
+  "Hùng", "Dũng", "Cường", "Tuấn", "Minh", "Hoàng", "Nam", "Đức", "Huy", "Hải", 
+  "Phong", "Sơn", "Thành", "Phúc", "Việt", "An", "Trí", "Lâm", "Trung", "Hiếu", 
+  "Kiên", "Nghĩa", "Vinh", "Long", "Quân", "Khoa", "Đạt", "Nhân", "Quyền", "Vương", 
+  "Vũ", "Bình", "Kha", "Thịnh", "Tú", "Điệp", "Tiến", "Tùng", "Bảo", "Khánh", 
+  "Văn", "Hậu", "Bách", "Đông", "Kiệt"
+];
+
+const tenDemNu = [
+  "Thị", "Ngọc", "Thanh", "Thu", "Mỹ", "Như", "Xuân", "Hải", "Phương", "Anh", 
+  "Kim", "Hồng", "Thùy", "Khánh", "Ánh", "Bảo", "Hoàng", "Đan", "Tố", "Diệu", 
+  "Tú", "Yến", "Minh", "Quỳnh", "Thảo"
+];
+
+const tenNu = [
+  "Mai", "Lan", "Trang", "Hương", "Phương", "Thảo", "Yến", "Hà", "Thu", "Linh", 
+  "Dung", "Giang", "Hạnh", "Nhi", "Nhung", "Ngân", "Quyên", "Tuyết", "Hoa", "Đào", 
+  "Nga", "Ánh", "Tâm", "Trinh", "Châu", "Vân", "My", "Quỳnh", "Uyên", "Ly", 
+  "Loan", "Phượng", "Vy", "Ngọc", "Thương", "Quý", "An", "Hiền", "Oanh", "Diệp", 
+  "Thi", "Nhiên", "Chi"
+];
+
+function getRandomVietnameseName() {
+  const getRandomItem = arr => arr[Math.floor(Math.random() * arr.length)];
+  const isFemale = Math.random() < 0.5;
+
+  // Tỷ lệ ít (6%) không có Họ hoặc không có Tên đệm
+  const includeHo = Math.random() >= 0.06;
+  const includeDem = Math.random() >= 0.06;
+
+  const parts = [];
+
+  if (includeHo) {
+    parts.push(getRandomItem(hoList));
+  }
+
+  if (includeDem) {
+    let tenDem = isFemale ? getRandomItem(tenDemNu) : getRandomItem(tenDemNam);
+    // 30% xác suất có 2 tên đệm
+    if (Math.random() < 0.30) {
+      const extraList = (isFemale ? tenDemNu : tenDemNam).filter(d => d !== tenDem);
+      if (extraList.length > 0) {
+        tenDem = `${tenDem} ${getRandomItem(extraList)}`;
+      }
+    }
+    parts.push(tenDem);
+  }
+
+  const ten = isFemale ? getRandomItem(tenNu) : getRandomItem(tenNam);
+  parts.push(ten);
+
+  let fullName = parts.join(' ');
+
+  // Biến thể viết hoa/viết thường ngẫu nhiên:
+  // 4% tất cả viết thường (ví dụ: nguyễn văn hùng)
+  // 5% từ đầu viết thường (ví dụ: nguyễn Văn Hùng)
+  // 4% từ đệm viết thường (ví dụ: Nguyễn văn Hùng)
+  const randCase = Math.random();
+  if (randCase < 0.04) {
+    fullName = fullName.toLowerCase();
+  } else if (randCase < 0.09) {
+    const words = fullName.split(' ');
+    words[0] = words[0].toLowerCase();
+    fullName = words.join(' ');
+  } else if (randCase < 0.13) {
+    const words = fullName.split(' ');
+    if (words.length > 2) {
+      words[1] = words[1].toLowerCase();
+      fullName = words.join(' ');
+    }
+  }
+
+  return fullName;
+}
+
+const sampleReviewerNames = Array.from({ length: 300 }, () => getRandomVietnameseName());
 
 document.addEventListener('DOMContentLoaded', async () => {
   const btnGlobalAutoTemplate = document.getElementById('btnGlobalAutoTemplate');
@@ -98,6 +181,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Set default phone & email as requested
   if (phoneInput && !phoneInput.value) phoneInput.value = '0334333777';
   if (emailInput && !emailInput.value) emailInput.value = 'kuchenvietnam@gmail.com';
+
+  const btnRandomName = document.getElementById('btnRandomName');
+  const authorInput = document.getElementById('authorInput');
+
+  if (authorInput && !authorInput.value) {
+    authorInput.value = getRandomVietnameseName();
+  }
+
+  if (btnRandomName && authorInput) {
+    btnRandomName.addEventListener('click', () => {
+      authorInput.value = getRandomVietnameseName();
+      log(`[Hệ thống] 🎲 Đã đổi tên người đánh giá thành: "${authorInput.value}"`, 'info');
+    });
+  }
 
   function log(msg, type = 'info') {
     if (!logTerminal) return;
@@ -265,9 +362,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
           return { success: false, status: json.status || 500, message: json.message || json.error || 'Server Kuchen từ chối hoặc báo lỗi', via: 'Server Proxy' };
         }
+      } else {
+        return { success: false, status: res.status, message: `Proxy Server trả về lỗi HTTP ${res.status}`, via: 'Server Proxy' };
       }
     } catch (e) {
-      // Ignore proxy fetch error and fallback to iframe
+      return { success: false, status: 0, message: `Lỗi kết nối mạng: ${e.message}`, via: 'Server Proxy' };
     }
 
     // 2. Hidden iframe fallback submission
@@ -630,9 +729,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Batch Table Management
   function addBatchRow(data = {}) {
     const tr = document.createElement('tr');
+    const defaultAuthor = data.author || getRandomVietnameseName();
     tr.innerHTML = `
       <td class="row-idx">${batchTableBody.children.length + 1}</td>
-      <td><input type="text" class="b-author" value="${data.author || ''}" placeholder="Họ tên"></td>
+      <td><input type="text" class="b-author" value="${defaultAuthor}" placeholder="Họ tên"></td>
       <td><input type="text" class="b-phone" value="${data.phone || '0334333777'}" placeholder="SĐT"></td>
       <td>
         <select class="b-rating">

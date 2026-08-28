@@ -727,7 +727,12 @@
 
             <div class="form-grid">
               <div class="form-group">
-                <label for="authorInput"><i class="fa-solid fa-user"></i> Họ và Tên người đánh giá <span class="req">*</span></label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <label for="authorInput" style="margin: 0;"><i class="fa-solid fa-user"></i> Họ và Tên người đánh giá <span class="req">*</span></label>
+                  <button type="button" id="btnRandomName" class="btn btn-sm btn-secondary" style="padding: 2px 8px; font-size: 0.78rem; border-radius: 6px; cursor: pointer;" title="Tạo họ tên ngẫu nhiên">
+                    <i class="fa-solid fa-shuffle"></i> 🎲 Đổi tên
+                  </button>
+                </div>
                 <input type="text" id="authorInput" name="author" required placeholder="Nhập họ và tên..." value="">
               </div>
 

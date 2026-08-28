@@ -25,13 +25,96 @@ const staffKyThuatDefault = [
   { "staffName": "Nguyễn Xuân Lâm", "fromStt": 120, "toStt": 128, "count": 9 }
 ];
 
-const sampleReviewerNames = [
-  "Nguyễn Thị Mai", "Lê Văn Hùng", "Trần Thị Lan", "Phạm Quốc Tuấn", "Vũ Hoàng Yến",
-  "Bùi Thanh Hà", "Đỗ Minh Đức", "Ngô Thị Thu", "Hoàng Văn Nam", "Đặng Thị Phương",
-  "Trịnh Quốc Việt", "Phan Thị Thảo", "Bùi Hoàng Nam", "Vũ Thị Hương", "Lương Văn Tâm",
-  "Dương Thị Hải", "Lý Quốc An", "Trần Văn Bình", "Nguyễn Thu Trang", "Đỗ Thị Kim",
-  "Phạm Văn Lâm", "Trần Quốc Huy", "Nguyễn Phương Anh", "Lê Thị Hồng", "Vũ Minh Trí"
+// Data pools for generating rich Vietnamese names (Họ + Tên đệm + Tên)
+const hoList = [
+  "Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Vũ", "Võ", "Đặng", "Bùi", 
+  "Đỗ", "Hồ", "Ngô", "Dương", "Lý", "Phan", "Trịnh", "Đào", "Đinh", "Lâm", 
+  "Phùng", "Mai", "Cao", "Lương", "Trương", "Tạ", "Khương", "Tô", "Quách", "Thái",
+  "Nghiêm", "Văn", "Đinh Lê", "Nguyễn Hoàng", "Trần Đăng", "Lê Vũ", "Phạm Hoàng", "Vũ Ngọc"
 ];
+
+const tenDemNam = [
+  "Văn", "Đức", "Quốc", "Đình", "Minh", "Hoàng", "Hữu", "Tấn", "Trọng", "Công", 
+  "Tuấn", "Viết", "Thái", "Phúc", "Xuân", "Chí", "Thành", "Bảo", "Gia", "Duy", 
+  "Quang", "Ngọc", "Nhật", "Tiến", "Hải", "Khánh", "Anh", "Đăng", "Thế", "Thành"
+];
+
+const tenNam = [
+  "Hùng", "Dũng", "Cường", "Tuấn", "Minh", "Hoàng", "Nam", "Đức", "Huy", "Hải", 
+  "Phong", "Sơn", "Thành", "Phúc", "Việt", "An", "Trí", "Lâm", "Trung", "Hiếu", 
+  "Kiên", "Nghĩa", "Vinh", "Long", "Quân", "Khoa", "Đạt", "Nhân", "Quyền", "Vương", 
+  "Vũ", "Bình", "Kha", "Thịnh", "Tú", "Điệp", "Tiến", "Tùng", "Bảo", "Khánh", 
+  "Văn", "Hậu", "Bách", "Đông", "Kiệt"
+];
+
+const tenDemNu = [
+  "Thị", "Ngọc", "Thanh", "Thu", "Mỹ", "Như", "Xuân", "Hải", "Phương", "Anh", 
+  "Kim", "Hồng", "Thùy", "Khánh", "Ánh", "Bảo", "Hoàng", "Đan", "Tố", "Diệu", 
+  "Tú", "Yến", "Minh", "Quỳnh", "Thảo"
+];
+
+const tenNu = [
+  "Mai", "Lan", "Trang", "Hương", "Phương", "Thảo", "Yến", "Hà", "Thu", "Linh", 
+  "Dung", "Giang", "Hạnh", "Nhi", "Nhung", "Ngân", "Quyên", "Tuyết", "Hoa", "Đào", 
+  "Nga", "Ánh", "Tâm", "Trinh", "Châu", "Vân", "My", "Quỳnh", "Uyên", "Ly", 
+  "Loan", "Phượng", "Vy", "Ngọc", "Thương", "Quý", "An", "Hiền", "Oanh", "Diệp", 
+  "Thi", "Nhiên", "Chi"
+];
+
+function getRandomVietnameseName() {
+  const getRandomItem = arr => arr[Math.floor(Math.random() * arr.length)];
+  const isFemale = Math.random() < 0.5;
+
+  // Tỷ lệ ít (6%) không có Họ hoặc không có Tên đệm
+  const includeHo = Math.random() >= 0.06;
+  const includeDem = Math.random() >= 0.06;
+
+  const parts = [];
+
+  if (includeHo) {
+    parts.push(getRandomItem(hoList));
+  }
+
+  if (includeDem) {
+    let tenDem = isFemale ? getRandomItem(tenDemNu) : getRandomItem(tenDemNam);
+    // 30% xác suất có 2 tên đệm
+    if (Math.random() < 0.30) {
+      const extraList = (isFemale ? tenDemNu : tenDemNam).filter(d => d !== tenDem);
+      if (extraList.length > 0) {
+        tenDem = `${tenDem} ${getRandomItem(extraList)}`;
+      }
+    }
+    parts.push(tenDem);
+  }
+
+  const ten = isFemale ? getRandomItem(tenNu) : getRandomItem(tenNam);
+  parts.push(ten);
+
+  let fullName = parts.join(' ');
+
+  // Biến thể viết hoa/viết thường ngẫu nhiên:
+  // 4% tất cả viết thường (ví dụ: nguyễn văn hùng)
+  // 5% từ đầu viết thường (ví dụ: nguyễn Văn Hùng)
+  // 4% từ đệm viết thường (ví dụ: Nguyễn văn Hùng)
+  const randCase = Math.random();
+  if (randCase < 0.04) {
+    fullName = fullName.toLowerCase();
+  } else if (randCase < 0.09) {
+    const words = fullName.split(' ');
+    words[0] = words[0].toLowerCase();
+    fullName = words.join(' ');
+  } else if (randCase < 0.13) {
+    const words = fullName.split(' ');
+    if (words.length > 2) {
+      words[1] = words[1].toLowerCase();
+      fullName = words.join(' ');
+    }
+  }
+
+  return fullName;
+}
+
+const sampleReviewerNames = Array.from({ length: 300 }, () => getRandomVietnameseName());
 
 document.addEventListener('DOMContentLoaded', async () => {
   const btnGlobalAutoTemplate = document.getElementById('btnGlobalAutoTemplate');
@@ -47,6 +130,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnStartAutoPilot = document.getElementById('btnStartAutoPilot');
   const btnStartAutoPilotAll = document.getElementById('btnStartAutoPilotAll');
   const btnStopAutoPilot = document.getElementById('btnStopAutoPilot');
+  const btnRetryFailed = document.getElementById('btnRetryFailed');
+  const failedCountBadge = document.getElementById('failedCountBadge');
   const quickStaffButtonsContainer = document.getElementById('quickStaffButtonsContainer');
   const autoPilotProgressSection = document.getElementById('autoPilotProgressSection');
   const autoPilotProgressText = document.getElementById('autoPilotProgressText');
@@ -62,6 +147,303 @@ document.addEventListener('DOMContentLoaded', async () => {
   let allProducts = [];
   let staffList = staffKyThuatDefault;
   let isAutoPilotRunning = false;
+  let globalFailedProducts = [];
+
+  function isRetryableStatus(status) {
+    return status === 429 || status === 502 || status === 503 || status === 504 || status === 408 || status === 0;
+  }
+
+  async function submitReviewPayloadWithFeedback(payload) {
+    const fields = {
+      comment_post_ID: payload.pid,
+      comment_parent: '0',
+      submit: 'Gửi đánh giá ngay',
+      author: payload.author,
+      phone: payload.phone || '0334333777',
+      email: payload.email || 'kuchenvietnam@gmail.com',
+      rating: payload.rating || '5',
+      comment: payload.comment
+    };
+
+    try {
+      const fd = new FormData();
+      for (let k in fields) fd.append(k, fields[k]);
+      fd.append('product_url', payload.productUrl || 'https://kuchen.vn/');
+
+      const res = await fetch('/api/proxy-submit', {
+        method: 'POST',
+        body: fd
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          return { success: true, status: json.status || 302, message: json.message || 'Server Kuchen phản hồi thành công', via: 'Server Proxy' };
+        } else {
+          return { success: false, status: json.status || 500, message: json.message || json.error || 'Server Kuchen báo lỗi', via: 'Server Proxy' };
+        }
+      } else {
+        return { success: false, status: res.status, message: `Proxy Server trả về lỗi HTTP ${res.status}`, via: 'Server Proxy' };
+      }
+    } catch (e) {
+      return { success: false, status: 0, message: `Lỗi kết nối mạng: ${e.message}`, via: 'Server Proxy' };
+    }
+  }
+
+  async function runAutoPilotLoop(productList, scopeName, isManualRetry = false) {
+    if (!productList || productList.length === 0) {
+      alert('Không có sản phẩm nào trong danh sách!');
+      return;
+    }
+
+    if (!isManualRetry) {
+      const pass = prompt(`🔐 VUI LÒNG NHẬP MẬT KHẨU ĐỂ KÍCH HOẠT CHẾ ĐỘ AUTO-PILOT (${scopeName}):`);
+      if (pass === null) return;
+
+      try {
+        const verifyRes = await fetch('/api/verify-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pass })
+        });
+        const verifyJson = await verifyRes.json();
+        if (!verifyJson.success) {
+          alert('❌ Mật khẩu không chính xác! Không thể kích hoạt chế độ Auto-Pilot.');
+          return;
+        }
+      } catch (e) {
+        alert('❌ Lỗi kết nối tới Server!');
+        return;
+      }
+
+      const confirmRun = confirm(`🚀 BẠN CÓ CHẮC CHẮN MUỐN BẮT ĐẦU CHẠY TỰ ĐỘNG CHO ${productList.length} SẢN PHẨM (${scopeName})?\n\nHệ thống sẽ tự động gửi đánh giá từng sản phẩm và cập nhật trực tiếp lên Dashboard chung!`);
+      if (!confirmRun) return;
+    }
+
+    isAutoPilotRunning = true;
+    if (btnStartAutoPilotStaff) btnStartAutoPilotStaff.style.display = 'none';
+    if (btnStartAutoPilot) btnStartAutoPilot.style.display = 'none';
+    if (btnStartAutoPilotAll) btnStartAutoPilotAll.style.display = 'none';
+    if (btnRetryFailed) btnRetryFailed.style.display = 'none';
+    btnStopAutoPilot.style.display = 'inline-flex';
+    autoPilotProgressSection.style.display = 'block';
+
+    let round1FailedItems = [];
+
+    log(`[Auto-Pilot] 🚀 Bắt đầu Lượt 1 tiến trình chạy tự động ${productList.length} sản phẩm (${scopeName})...`, 'info');
+
+    for (let i = 0; i < productList.length; i++) {
+      if (!isAutoPilotRunning) break;
+
+      const product = productList[i];
+      const pid = product.productId || (product.stt === 4 || product.stt === 100 ? '9778' : product.stt);
+      const randomName = getRandomVietnameseName();
+      
+      let reviewText = product.template1 || product.template2;
+      if (product.template1 && product.template2) {
+        reviewText = Math.random() > 0.5 ? product.template1 : product.template2;
+      }
+      if (!reviewText) {
+        reviewText = 'Sản phẩm dùng rất êm và bền, chất lượng chuẩn Kuchen, giao hàng nhanh chóng.';
+      }
+
+      const pct = Math.round(((i + 1) / productList.length) * 100);
+      autoPilotProgressBarFill.style.width = `${pct}%`;
+      autoPilotProgressPercent.textContent = `${pct}%`;
+      autoPilotProgressText.textContent = `Lượt 1: Đã xử lý ${i + 1}/${productList.length} sản phẩm (${scopeName})`;
+      autoPilotCurrentItemText.textContent = `⚡ [STT ${product.stt}] [${product.category || 'Gia dụng'}] Đang gửi cho "${product.name}" (${product.assignee})...`;
+
+      log(`[Auto-Pilot] [Lượt 1] [${i+1}/${productList.length}] Đang gửi SP STT ${product.stt} (ID: ${pid}) - "${randomName}"...`, 'info');
+
+      const result = await submitReviewPayloadWithFeedback({
+        pid: pid,
+        author: randomName,
+        phone: '0334333777',
+        email: 'kuchenvietnam@gmail.com',
+        comment: reviewText,
+        rating: '5',
+        productUrl: product.url
+      });
+
+      if (result.success) {
+        recordCompletion(pid, {
+          stt: product.stt,
+          name: product.name,
+          url: product.url,
+          assignee: product.assignee,
+          author: randomName,
+          phone: '0334333777',
+          comment: reviewText,
+          rating: 5
+        });
+        log(`[Auto-Pilot] ✅ [Lượt 1] [${i+1}/${productList.length}] Thành công! (Code ${result.status})`, 'success');
+      } else {
+        round1FailedItems.push(product);
+        log(`[Auto-Pilot] ⚠️ [Lượt 1] [STT ${product.stt}] Gửi thất bại (Mã ${result.status}: ${result.message}). Đã thêm vào mảng thử lại Lượt 2.`, 'warning');
+      }
+
+      if (i < productList.length - 1 && isAutoPilotRunning) {
+        const delaySec = Math.floor(Math.random() * 4) + 3;
+        autoPilotCurrentItemText.textContent = `⏳ Chờ ${delaySec}s để chống Spam trước khi sang sản phẩm tiếp theo...`;
+        await new Promise(r => setTimeout(r, delaySec * 1000));
+      }
+    }
+
+    // --- LƯỢT 2 (RETRY ROUND FOR FAILED ITEMS) ---
+    let finalFailedItems = [...round1FailedItems];
+
+    if (round1FailedItems.length > 0 && isAutoPilotRunning) {
+      log(`[Auto-Pilot] 📊 Lượt 1 hoàn tất! Thành công ${productList.length - round1FailedItems.length}/${productList.length}. Có ${round1FailedItems.length} sản phẩm thất bại (Mã 429/Timeout).`, 'warning');
+      log(`[Auto-Pilot] ⏸️ Tạm dừng 30 giây để khôi phục Rate Limit Quota trước khi kích hoạt Lượt 2...`, 'info');
+
+      for (let sec = 30; sec > 0; sec--) {
+        if (!isAutoPilotRunning) break;
+        autoPilotCurrentItemText.textContent = `⏳ [Nghỉ Cooldown Rate Limit] Tự động kích hoạt Lượt 2 sau ${sec} giây...`;
+        await new Promise(r => setTimeout(r, 1000));
+      }
+
+      if (isAutoPilotRunning) {
+        log(`[Auto-Pilot] 🔄 BẮT ĐẦU LƯỢT 2: Thử lại ${round1FailedItems.length} sản phẩm lỗi (Tăng giãn cách +2s)...`, 'info');
+        finalFailedItems = [];
+
+        for (let j = 0; j < round1FailedItems.length; j++) {
+          if (!isAutoPilotRunning) break;
+
+          const product = round1FailedItems[j];
+          const pid = product.productId || (product.stt === 4 || product.stt === 100 ? '9778' : product.stt);
+          const randomName = getRandomVietnameseName();
+          
+          let reviewText = product.template1 || product.template2;
+          if (product.template1 && product.template2) {
+            reviewText = Math.random() > 0.5 ? product.template1 : product.template2;
+          }
+          if (!reviewText) {
+            reviewText = 'Sản phẩm dùng rất êm và bền, chất lượng chuẩn Kuchen, giao hàng nhanh chóng.';
+          }
+
+          const pct = Math.round(((j + 1) / round1FailedItems.length) * 100);
+          autoPilotProgressBarFill.style.width = `${pct}%`;
+          autoPilotProgressPercent.textContent = `${pct}%`;
+          autoPilotProgressText.textContent = `Lượt 2 (Thử lại): Đã xử lý ${j + 1}/${round1FailedItems.length} sản phẩm lỗi`;
+          autoPilotCurrentItemText.textContent = `🔄 [Lượt 2] [STT ${product.stt}] Đang thử lại cho "${product.name}"...`;
+
+          log(`[Auto-Pilot] [Lượt 2] [${j+1}/${round1FailedItems.length}] Đang thử lại SP STT ${product.stt} (ID: ${pid})...`, 'info');
+
+          const result = await submitReviewPayloadWithFeedback({
+            pid: pid,
+            author: randomName,
+            phone: '0334333777',
+            email: 'kuchenvietnam@gmail.com',
+            comment: reviewText,
+            rating: '5',
+            productUrl: product.url
+          });
+
+          if (result.success) {
+            recordCompletion(pid, {
+              stt: product.stt,
+              name: product.name,
+              url: product.url,
+              assignee: product.assignee,
+              author: randomName,
+              phone: '0334333777',
+              comment: reviewText,
+              rating: 5
+            });
+            log(`[Auto-Pilot] ✅ [Lượt 2] [STT ${product.stt}] THÀNH CÔNG RỒI! (Code ${result.status})`, 'success');
+          } else {
+            finalFailedItems.push(product);
+            log(`[Auto-Pilot] ❌ [Lượt 2] [STT ${product.stt}] Vẫn thất bại (Mã ${result.status}: ${result.message})`, 'error');
+          }
+
+          if (j < round1FailedItems.length - 1 && isAutoPilotRunning) {
+            // Delay for Round 2: +2s extra delay per request
+            const delaySec = Math.floor(Math.random() * 4) + 3 + 2; // 5s to 8s
+            autoPilotCurrentItemText.textContent = `⏳ [Lượt 2] Chờ ${delaySec}s (+2s giãn cách Quota) trước sản phẩm tiếp theo...`;
+            await new Promise(r => setTimeout(r, delaySec * 1000));
+          }
+        }
+      }
+    }
+
+    globalFailedProducts = finalFailedItems;
+
+    if (isAutoPilotRunning) {
+      if (globalFailedProducts.length === 0) {
+        log(`[Auto-Pilot] 🎉 ĐÃ HOÀN THÀNH TẤT CẢ SẢN PHẨM KHÔNG CÒN LỖI NÀO (${scopeName})!`, 'success');
+        alert(`🎉 ĐÃ HOÀN THÀNH TỰ ĐỘNG TẤT CẢ SẢN PHẨM (${scopeName})!\n\nTiến độ đã được đồng bộ trực tiếp lên Dashboard.`);
+      } else {
+        log(`[Auto-Pilot] ⚠️ TIẾN TRÌNH HOÀN TẤT: Hoàn thành đa số, còn ${globalFailedProducts.length} sản phẩm thất bại sau 2 lượt. Bấm nút "🔄 CHẠY LẠI SẢN PHẨM LỖI" để thử lại thủ công.`, 'warning');
+        alert(`⚠️ Hoàn tất tiến trình! Còn ${globalFailedProducts.length} sản phẩm bị lỗi.\n\nBạn có thể nhấn nút "🔄 CHẠY LẠI SẢN PHẨM LỖI" để thử lại thủ công bất kỳ lúc nào.`);
+      }
+    }
+    
+    stopAutoPilot();
+  }
+
+  if (btnStartAutoPilotStaff) {
+    btnStartAutoPilotStaff.addEventListener('click', () => {
+      const selectedStaff = staffSelect ? staffSelect.value : 'ALL';
+      if (selectedStaff === 'ALL') {
+        alert('Vui lòng chọn 1 người phụ trách cụ thể trong danh sách hoặc bấm nút chạy nhanh theo từng người!');
+        return;
+      }
+      const staffProducts = allProducts.filter(p => p.assignee === selectedStaff);
+      runAutoPilotLoop(staffProducts, `Nhân Viên: ${selectedStaff}`);
+    });
+  }
+
+  if (btnStartAutoPilot) {
+    btnStartAutoPilot.addEventListener('click', () => {
+      const selectedCat = categorySelect ? categorySelect.value : 'ALL';
+      if (selectedCat === 'ALL') {
+        alert('Vui lòng chọn 1 danh mục cụ thể trong ô "Chọn Danh Mục Sản Phẩm Để Chạy"!');
+        return;
+      }
+      const catProducts = allProducts.filter(p => (p.category || 'Chưa phân loại') === selectedCat);
+      runAutoPilotLoop(catProducts, `Danh Mục: ${selectedCat}`);
+    });
+  }
+
+  if (btnStartAutoPilotAll) {
+    btnStartAutoPilotAll.addEventListener('click', () => {
+      runAutoPilotLoop(allProducts, 'Toàn bộ 128 Sản Phẩm');
+    });
+  }
+
+  if (btnRetryFailed) {
+    btnRetryFailed.addEventListener('click', () => {
+      if (!globalFailedProducts || globalFailedProducts.length === 0) {
+        alert('Hiện không có sản phẩm nào bị lỗi!');
+        return;
+      }
+      runAutoPilotLoop(globalFailedProducts, `Chạy lại ${globalFailedProducts.length} SP Lỗi`, true);
+    });
+  }
+
+  if (btnStopAutoPilot) {
+    btnStopAutoPilot.addEventListener('click', () => {
+      log('[Auto-Pilot] ⏹️ Đã dừng tiến trình chạy tự động.', 'warning');
+      stopAutoPilot();
+    });
+  }
+
+  function stopAutoPilot() {
+    isAutoPilotRunning = false;
+    if (btnStartAutoPilotStaff) btnStartAutoPilotStaff.style.display = 'inline-flex';
+    if (btnStartAutoPilot) btnStartAutoPilot.style.display = 'inline-flex';
+    if (btnStartAutoPilotAll) btnStartAutoPilotAll.style.display = 'inline-flex';
+    if (btnStopAutoPilot) btnStopAutoPilot.style.display = 'none';
+
+    if (btnRetryFailed) {
+      if (globalFailedProducts && globalFailedProducts.length > 0) {
+        btnRetryFailed.style.display = 'inline-flex';
+        if (failedCountBadge) failedCountBadge.textContent = globalFailedProducts.length;
+      } else {
+        btnRetryFailed.style.display = 'none';
+      }
+    }
+  }
 
   function log(msg, type = 'info') {
     if (!logTerminal) return;
@@ -416,7 +798,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const product = productList[i];
       const pid = product.productId || (product.stt === 4 || product.stt === 100 ? '9778' : product.stt);
-      const randomName = sampleReviewerNames[Math.floor(Math.random() * sampleReviewerNames.length)];
+      const randomName = getRandomVietnameseName();
       
       let reviewText = product.template1 || product.template2;
       if (product.template1 && product.template2) {

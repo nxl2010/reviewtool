@@ -128,17 +128,23 @@ async function submitSingleReview({ productId, productUrl, author, phone, email,
     body: postData
   });
 
-  // Success in WP/WooCommerce is usually HTTP 302 Redirect to #reviews or product page
-  if (response.statusCode === 302 || response.statusCode === 200) {
-    const location = response.headers.location || '';
-    if (location.includes('unapproved') || location.includes('#reviews') || response.statusCode === 302) {
-      return {
-        success: true,
-        statusCode: response.statusCode,
-        location,
-        message: 'Gửi đánh giá thành công! Đã chuyển hướng hệ thống WooCommerce.'
-      };
-    }
+  // Success in WP/WooCommerce is strictly HTTP 302 Redirect
+  if (response.statusCode === 302) {
+    return {
+      success: true,
+      statusCode: 302,
+      location: response.headers.location || '',
+      message: 'Gửi đánh giá thành công! (Code 302 Redirect)'
+    };
+  }
+
+  // HTTP 429 Rate Limit Error handling
+  if (response.statusCode === 429) {
+    return {
+      success: false,
+      statusCode: 429,
+      error: 'Lỗi HTTP 429: Máy chủ Kuchen.vn báo giới hạn tần suất gửi (Rate Limit Exceeded)'
+    };
   }
 
   // If error HTML returned

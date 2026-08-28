@@ -656,7 +656,10 @@
             <i class="fa-solid fa-building-user accent-icon"></i>
             <h3>Chọn Bộ Phận & Người Phụ Trách</h3>
           </div>
-          <div class="excel-upload-btn-wrapper">
+          <div class="excel-upload-btn-wrapper" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-sm btn-success" id="btnExportExcelReport" style="padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+              <i class="fa-solid fa-file-excel"></i> 📥 Xuất Báo Cáo Excel
+            </button>
             <button class="btn btn-sm btn-outline"><i class="fa-solid fa-file-excel"></i> Upload File Phân Công</button>
             <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv">
           </div>
@@ -737,8 +740,13 @@
               </div>
 
               <div class="form-group">
-                <label for="phoneInput"><i class="fa-solid fa-phone"></i> Số Điện Thoại <span class="req">* (Mặc định: 0334333777)</span></label>
-                <input type="tel" id="phoneInput" name="phone" required placeholder="Nhập số điện thoại..." value="0334333777">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <label for="phoneInput" style="margin: 0;"><i class="fa-solid fa-phone"></i> Số Điện Thoại <span class="req">*</span></label>
+                  <button type="button" id="btnRandomPhone" class="btn btn-sm btn-secondary" style="padding: 2px 8px; font-size: 0.78rem; border-radius: 6px; cursor: pointer;" title="Tạo số điện thoại ngẫu nhiên">
+                    <i class="fa-solid fa-shuffle"></i> 🎲 Đổi SĐT
+                  </button>
+                </div>
+                <input type="tel" id="phoneInput" name="phone" required placeholder="Nhập số điện thoại..." value="">
               </div>
 
               <div class="form-group">

@@ -137,6 +137,19 @@ function getRandomVietnameseName() {
   return fullName;
 }
 
+const phonePrefixes = [
+  "098", "097", "096", "086", "032", "033", "034", "035", "036", "037", "038", "039",
+  "091", "094", "088", "083", "084", "085", "081", "082",
+  "090", "093", "089", "070", "079", "077", "076", "078"
+];
+
+function getRandomPhone() {
+  const getRandomItem = arr => arr[Math.floor(Math.random() * arr.length)];
+  const prefix = getRandomItem(phonePrefixes);
+  const suffix = Math.floor(1000000 + Math.random() * 9000000).toString();
+  return `${prefix}${suffix}`;
+}
+
 const sampleReviewerNames = Array.from({ length: 300 }, () => getRandomVietnameseName());
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -202,7 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let isAutoPilotRunning = false;
 
   // Set default phone & email as requested
-  if (phoneInput && !phoneInput.value) phoneInput.value = '0334333777';
+  if (phoneInput && !phoneInput.value) phoneInput.value = getRandomPhone();
   if (emailInput && !emailInput.value) emailInput.value = 'kuchenvietnam@gmail.com';
 
   const btnRandomName = document.getElementById('btnRandomName');
@@ -217,6 +230,78 @@ document.addEventListener('DOMContentLoaded', async () => {
       authorInput.value = getRandomVietnameseName();
       log(`[Hệ thống] 🎲 Đã đổi tên người đánh giá thành: "${authorInput.value}"`, 'info');
     });
+  }
+
+  const btnRandomPhone = document.getElementById('btnRandomPhone');
+  if (btnRandomPhone && phoneInput) {
+    btnRandomPhone.addEventListener('click', () => {
+      phoneInput.value = getRandomPhone();
+      log(`[Hệ thống] 🎲 Đã tạo SĐT ngẫu nhiên mới: "${phoneInput.value}"`, 'info');
+    });
+  }
+
+  const btnExportExcelReport = document.getElementById('btnExportExcelReport');
+  if (btnExportExcelReport) {
+    btnExportExcelReport.addEventListener('click', exportToExcelReport);
+  }
+
+  function exportToExcelReport() {
+    const completedReviews = JSON.parse(localStorage.getItem('kuchen_completed_reviews') || '{}');
+    
+    if (!allProducts || allProducts.length === 0) {
+      alert('Không có dữ liệu sản phẩm để xuất báo cáo!');
+      return;
+    }
+
+    const exportData = allProducts.map((p, index) => {
+      const pid = p.productId || p.stt;
+      const rec = completedReviews[pid] || completedReviews[p.stt] || null;
+
+      const isSuccess = rec && (rec.status === 'HOÀN THÀNH' || rec.statusCode === 302 || rec.statusClass === 'completed');
+      const isError429 = rec && (rec.statusCode === 429 || (rec.status && String(rec.status).includes('429')));
+
+      let statusText = '⏳ Chưa gửi đánh giá';
+      if (isSuccess) {
+        statusText = '✅ Thành công (Code 302)';
+      } else if (isError429) {
+        statusText = '❌ Lỗi Rate Limit (Code 429)';
+      } else if (rec) {
+        statusText = `⚠️ Lỗi khác (${rec.status || 'Thất bại'})`;
+      }
+
+      return {
+        'STT': p.stt || (index + 1),
+        'Bộ Phận': (currentDept || 'kythuat').toUpperCase(),
+        'Danh Mục': p.category || 'Gia dụng',
+        'Tên Sản Phẩm': p.name || '',
+        'Mã SKU': p.sku || 'N/A',
+        'Nhân Viên Phụ Trách': p.assignee || '',
+        'Trạng Thái Gửi': statusText,
+        'Người Đánh Giá': rec ? (rec.reviewerName || '') : '',
+        'Số Điện Thoại': rec ? (rec.reviewerPhone || '') : '',
+        'Mức Đánh Giá': rec ? (`${rec.rating || 5}★`) : '',
+        'Nội Dung Đánh Giá': rec ? (rec.reviewContent || '') : '',
+        'Thời Gian Hoàn Thành': rec ? (rec.completedAt || '') : '',
+        'URL Sản Phẩm': p.url || ''
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    worksheet['!cols'] = [
+      { wch: 6 },  { wch: 10 }, { wch: 25 }, { wch: 45 },
+      { wch: 15 }, { wch: 18 }, { wch: 25 }, { wch: 22 },
+      { wch: 14 }, { wch: 10 }, { wch: 50 }, { wch: 20 }, { wch: 50 }
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Báo Cáo Đánh Giá');
+
+    const deptName = (currentDept || 'kythuat').toUpperCase();
+    const today = new Date().toISOString().split('T')[0];
+    const fileName = `Bao_Cao_Kuchen_Review_${deptName}_${today}.xlsx`;
+
+    XLSX.writeFile(workbook, fileName);
+    log(`[Hệ thống] 📥 Đã xuất báo cáo Excel thành công: "${fileName}"`, 'success');
   }
 
   function log(msg, type = 'info') {
@@ -753,10 +838,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   function addBatchRow(data = {}) {
     const tr = document.createElement('tr');
     const defaultAuthor = data.author || getRandomVietnameseName();
+    const defaultPhone = data.phone || getRandomPhone();
     tr.innerHTML = `
       <td class="row-idx">${batchTableBody.children.length + 1}</td>
       <td><input type="text" class="b-author" value="${defaultAuthor}" placeholder="Họ tên"></td>
-      <td><input type="text" class="b-phone" value="${data.phone || '0334333777'}" placeholder="SĐT"></td>
+      <td><input type="text" class="b-phone" value="${defaultPhone}" placeholder="SĐT"></td>
       <td>
         <select class="b-rating">
           <option value="5" ${data.rating == 5 ? 'selected' : ''}>5 ★</option>

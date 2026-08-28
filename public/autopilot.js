@@ -137,6 +137,19 @@ function getRandomVietnameseName() {
   return fullName;
 }
 
+const phonePrefixes = [
+  "098", "097", "096", "086", "032", "033", "034", "035", "036", "037", "038", "039",
+  "091", "094", "088", "083", "084", "085", "081", "082",
+  "090", "093", "089", "070", "079", "077", "076", "078"
+];
+
+function getRandomPhone() {
+  const getRandomItem = arr => arr[Math.floor(Math.random() * arr.length)];
+  const prefix = getRandomItem(phonePrefixes);
+  const suffix = Math.floor(1000000 + Math.random() * 9000000).toString();
+  return `${prefix}${suffix}`;
+}
+
 const sampleReviewerNames = Array.from({ length: 300 }, () => getRandomVietnameseName());
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -278,28 +291,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       log(`[Auto-Pilot] [Lượt 1] [${i+1}/${productList.length}] Đang gửi SP STT ${product.stt} (ID: ${pid}) - "${randomName}"...`, 'info');
 
+      const randomPhone = getRandomPhone();
       const result = await submitReviewPayloadWithFeedback({
         pid: pid,
         author: randomName,
-        phone: '0334333777',
+        phone: randomPhone,
         email: 'kuchenvietnam@gmail.com',
         comment: reviewText,
         rating: '5',
         productUrl: product.url
       });
 
-      if (result.success) {
+      if (result.success && (result.status === 302 || result.status === 200)) {
         recordCompletion(pid, {
           stt: product.stt,
           name: product.name,
           url: product.url,
           assignee: product.assignee,
           author: randomName,
-          phone: '0334333777',
+          phone: randomPhone,
           comment: reviewText,
-          rating: 5
+          rating: 5,
+          statusCode: 302
         });
-        log(`[Auto-Pilot] ✅ [Lượt 1] [${i+1}/${productList.length}] Thành công! (Code ${result.status})`, 'success');
+        log(`[Auto-Pilot] ✅ [Lượt 1] [${i+1}/${productList.length}] Thành công! (Code 302)`, 'success');
       } else {
         round1FailedItems.push(product);
         log(`[Auto-Pilot] ⚠️ [Lượt 1] [STT ${product.stt}] Gửi thất bại (Mã ${result.status}: ${result.message}). Đã thêm vào mảng thử lại Lượt 2.`, 'warning');
@@ -352,28 +367,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           log(`[Auto-Pilot] [Lượt 2] [${j+1}/${round1FailedItems.length}] Đang thử lại SP STT ${product.stt} (ID: ${pid})...`, 'info');
 
+          const randomPhone = getRandomPhone();
           const result = await submitReviewPayloadWithFeedback({
             pid: pid,
             author: randomName,
-            phone: '0334333777',
+            phone: randomPhone,
             email: 'kuchenvietnam@gmail.com',
             comment: reviewText,
             rating: '5',
             productUrl: product.url
           });
 
-          if (result.success) {
+          if (result.success && (result.status === 302 || result.status === 200)) {
             recordCompletion(pid, {
               stt: product.stt,
               name: product.name,
               url: product.url,
               assignee: product.assignee,
               author: randomName,
-              phone: '0334333777',
+              phone: randomPhone,
               comment: reviewText,
-              rating: 5
+              rating: 5,
+              statusCode: 302
             });
-            log(`[Auto-Pilot] ✅ [Lượt 2] [STT ${product.stt}] THÀNH CÔNG RỒI! (Code ${result.status})`, 'success');
+            log(`[Auto-Pilot] ✅ [Lượt 2] [STT ${product.stt}] THÀNH CÔNG RỒI! (Code 302)`, 'success');
           } else {
             finalFailedItems.push(product);
             log(`[Auto-Pilot] ❌ [Lượt 2] [STT ${product.stt}] Vẫn thất bại (Mã ${result.status}: ${result.message})`, 'error');

@@ -689,12 +689,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Update Template Options
+  // Update Template Options with 12 Evaluation Sets
   function updateTemplateOptions(foundProduct) {
     if (!templateSelect) return;
     templateSelect.innerHTML = '';
     
-    if (!foundProduct || (!foundProduct.template1 && !foundProduct.template2)) {
+    if (!foundProduct) {
+      templateSelect.innerHTML = '<option value="">-- Chọn sản phẩm trước để xem mẫu nhận xét --</option>';
+      return;
+    }
+
+    const reviews = foundProduct.reviews || {};
+    const hasAnyReview = Object.values(reviews).some(val => val && String(val).trim().length > 0) || foundProduct.template1 || foundProduct.template2;
+
+    if (!hasAnyReview) {
       templateSelect.innerHTML = '<option value="">-- Sản phẩm này chưa có mẫu câu --</option>';
       return;
     }
@@ -704,19 +712,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     defaultOpt.textContent = '-- Chọn mẫu câu nhận xét gợi ý cho sản phẩm này --';
     templateSelect.appendChild(defaultOpt);
 
-    if (foundProduct.template1) {
-      const opt1 = document.createElement('option');
-      opt1.value = foundProduct.template1;
-      opt1.textContent = `📝 Mẫu 1: "${foundProduct.template1.substring(0, 60)}..."`;
-      templateSelect.appendChild(opt1);
-    }
+    const addOptGroup = (label, items) => {
+      const validItems = items.filter(item => item.val && String(item.val).trim().length > 0);
+      if (validItems.length === 0) return;
 
-    if (foundProduct.template2) {
-      const opt2 = document.createElement('option');
-      opt2.value = foundProduct.template2;
-      opt2.textContent = `📝 Mẫu 2: "${foundProduct.template2.substring(0, 60)}..."`;
-      templateSelect.appendChild(opt2);
-    }
+      const group = document.createElement('optgroup');
+      group.label = label;
+
+      validItems.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.val;
+        const textVal = String(item.val);
+        const snippet = textVal.length > 55 ? textVal.substring(0, 55) + '...' : textVal;
+        opt.textContent = `${item.title}: "${snippet}"`;
+        group.appendChild(opt);
+      });
+
+      templateSelect.appendChild(group);
+    };
+
+    // 1. 4 Bộ Đánh Giá Mới
+    addOptGroup('🌟 4 BỘ ĐÁNH GIÁ MỚI', [
+      { title: '⚡ Bản ngắn 2', val: reviews.new_short2 },
+      { title: '⚡ Bản dài 2', val: reviews.new_long2 },
+      { title: '⚡ Bản so sánh 2', val: reviews.new_compare2 },
+      { title: '⚡ Bản trộn 3', val: reviews.new_mix3 }
+    ]);
+
+    // 2. Văn bản 2 (Bộ mặc định)
+    addOptGroup('📄 VĂN BẢN 2 (BỘ MẶC ĐỊNH)', [
+      { title: '📝 Bản ngắn (Mẫu 1)', val: reviews.txt2_short || foundProduct.template1 },
+      { title: '📝 Bản dài (Mẫu 2)', val: reviews.txt2_long || foundProduct.template2 },
+      { title: '📝 Bản so sánh', val: reviews.txt2_compare || foundProduct.template3 }
+    ]);
+
+    // 3. Văn bản 1
+    addOptGroup('📑 VĂN BẢN 1', [
+      { title: '📑 Bản ngắn', val: reviews.txt1_short },
+      { title: '📑 Bản dài', val: reviews.txt1_long },
+      { title: '📑 Bản so sánh', val: reviews.txt1_compare }
+    ]);
+
+    // 4. Markdown
+    addOptGroup('📖 HAI FILE MARKDOWN', [
+      { title: '📖 Markdown 1', val: reviews.md1 },
+      { title: '📖 Markdown 2', val: reviews.md2 }
+    ]);
   }
 
   // Handle product select change
@@ -734,12 +775,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Update Template Select Box in background if needed
         updateTemplateOptions(found);
 
-        // System-wide Auto-Fill Template 1 behavior:
-        if (isAutoFillOn && (found.template1 || found.template2)) {
-          commentInput.value = found.template1 || found.template2;
-          if (templateBox) templateBox.style.display = 'block';
-          if (btnToggleTemplates) btnToggleTemplates.innerHTML = '<i class="fa-solid fa-eye-slash"></i> 💡 Ẩn Gợi Ý Mẫu Câu';
-          log(`[Auto-Fill System] Đã tự động điền Mẫu 1 cho sản phẩm "${found.name}".`, 'info');
+        // System-wide Auto-Fill Template behavior (prioritize new_short2 / new_mix3 / template1):
+        if (isAutoFillOn) {
+          const reviews = found.reviews || {};
+          const autoText = reviews.new_short2 || reviews.new_mix3 || reviews.txt2_short || found.template1 || found.template2;
+          if (autoText) {
+            commentInput.value = autoText;
+            if (templateBox) templateBox.style.display = 'block';
+            if (btnToggleTemplates) btnToggleTemplates.innerHTML = '<i class="fa-solid fa-eye-slash"></i> 💡 Ẩn Gợi Ý Mẫu Câu';
+            log(`[Auto-Fill System] Đã tự động điền Mẫu Đánh Giá Mới cho sản phẩm "${found.name}".`, 'info');
+          }
         } else {
           commentInput.value = '';
         }
@@ -767,13 +812,34 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Template Quick Buttons
+  const btnChooseNewTemplate = document.getElementById('btnChooseNewTemplate');
+  if (btnChooseNewTemplate) {
+    btnChooseNewTemplate.addEventListener('click', () => {
+      const selectedUrl = excelProductSelect.value;
+      const found = allProducts.find(p => p.url === selectedUrl);
+      const reviews = found ? (found.reviews || {}) : {};
+      const newText = reviews.new_short2 || reviews.new_mix3 || reviews.new_long2;
+
+      if (found && newText) {
+        commentInput.value = newText;
+        if (templateSelect) templateSelect.value = newText;
+        updateCharCount();
+      } else {
+        alert('Vui lòng chọn sản phẩm trước hoặc sản phẩm này chưa có Bộ Đánh Giá Mới!');
+      }
+    });
+  }
+
   if (btnChooseTemplate1) {
     btnChooseTemplate1.addEventListener('click', () => {
       const selectedUrl = excelProductSelect.value;
       const found = allProducts.find(p => p.url === selectedUrl);
-      if (found && found.template1) {
-        commentInput.value = found.template1;
-        if (templateSelect) templateSelect.value = found.template1;
+      const reviews = found ? (found.reviews || {}) : {};
+      const text1 = reviews.txt2_short || found.template1;
+
+      if (found && text1) {
+        commentInput.value = text1;
+        if (templateSelect) templateSelect.value = text1;
         updateCharCount();
       } else {
         alert('Vui lòng chọn sản phẩm trước hoặc sản phẩm này chưa có Mẫu 1!');
@@ -785,9 +851,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnChooseTemplate2.addEventListener('click', () => {
       const selectedUrl = excelProductSelect.value;
       const found = allProducts.find(p => p.url === selectedUrl);
-      if (found && found.template2) {
-        commentInput.value = found.template2;
-        if (templateSelect) templateSelect.value = found.template2;
+      const reviews = found ? (found.reviews || {}) : {};
+      const text2 = reviews.txt2_long || found.template2;
+
+      if (found && text2) {
+        commentInput.value = text2;
+        if (templateSelect) templateSelect.value = text2;
         updateCharCount();
       } else {
         alert('Vui lòng chọn sản phẩm trước hoặc sản phẩm này chưa có Mẫu 2!');

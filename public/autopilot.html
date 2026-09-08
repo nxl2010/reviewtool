@@ -528,6 +528,43 @@
               </select>
             </div>
           </div>
+
+          <!-- Question Set Selector Box -->
+          <div class="form-group" style="margin-bottom: 12px; background: rgba(217, 119, 6, 0.05); padding: 12px; border-radius: 10px; border: 1px dashed rgba(217, 119, 6, 0.4);">
+            <label for="questionSetSelect" style="font-weight: 700; font-size: 13px; color: var(--text-main); display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+              <i class="fa-solid fa-list-check" style="color: var(--accent-gold); font-size: 16px;"></i> 🌟 Chọn Bộ Câu Hỏi Đánh Giá Để Chạy:
+            </label>
+            <select id="questionSetSelect" style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-main); font-weight: 700; font-size: 13.5px;">
+              <optgroup label="🌟 4 BỘ ĐÁNH GIÁ MỚI (ƯU TIÊN)">
+                <option value="NEW_RANDOM" selected>🔥 Ngẫu Nhiên Trong 4 Bộ Mới (Bản ngắn 2 / Bản dài 2 / Bản so sánh 2 / Bản trộn 3)</option>
+                <option value="new_short2">⚡ Bộ Mới 1: Bản ngắn 2</option>
+                <option value="new_long2">⚡ Bộ Mới 2: Bản dài 2</option>
+                <option value="new_compare2">⚡ Bộ Mới 3: Bản so sánh 2 (Chỉ dùng khi từng dùng sản phẩm khác)</option>
+                <option value="new_mix3">⚡ Bộ Mới 4: Bản trộn 3</option>
+              </optgroup>
+              <optgroup label="🎲 TẤT CẢ CÁC BỘ">
+                <option value="ALL_RANDOM">🎲 Ngẫu Nhiên Tất Cả (Trộn ngẫu nhiên từ 12 bộ câu hỏi)</option>
+              </optgroup>
+              <optgroup label="📄 VĂN BẢN 2 (BỘ MẶC ĐỊNH CŨ)">
+                <option value="TXT2_RANDOM">📄 Văn Bản 2: Ngẫu nhiên (Ngắn / Dài / So sánh)</option>
+                <option value="txt2_short">📄 Văn Bản 2: Bản ngắn</option>
+                <option value="txt2_long">📄 Văn Bản 2: Bản dài</option>
+                <option value="txt2_compare">📄 Văn Bản 2: Bản so sánh</option>
+              </optgroup>
+              <optgroup label="📑 VĂN BẢN 1">
+                <option value="TXT1_RANDOM">📑 Văn Bản 1: Ngẫu nhiên (Ngắn / Dài / So sánh)</option>
+                <option value="txt1_short">📑 Văn Bản 1: Bản ngắn</option>
+                <option value="txt1_long">📑 Văn Bản 1: Bản dài</option>
+                <option value="txt1_compare">📑 Văn Bản 1: Bản so sánh</option>
+              </optgroup>
+              <optgroup label="📖 HAI FILE MARKDOWN">
+                <option value="MD_RANDOM">📖 Markdown: Ngẫu nhiên (MD1 / MD2)</option>
+                <option value="md1">📖 Markdown 1 (danh-gia-san-pham 2(1).md)</option>
+                <option value="md2">📖 Markdown 2 (danh-gia-san-pham(2).md)</option>
+              </optgroup>
+            </select>
+          </div>
+
           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <span class="badge-user" id="categoryProductCountBadge" style="flex: 1;">Danh mục: Tất cả (15 danh mục)</span>
             <span class="badge-user" id="staffProductCountBadge" style="flex: 1;">Phụ trách: Tất cả sản phẩm</span>

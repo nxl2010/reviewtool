@@ -147,7 +147,89 @@ function getRandomPhone() {
   const getRandomItem = arr => arr[Math.floor(Math.random() * arr.length)];
   const prefix = getRandomItem(phonePrefixes);
   const suffix = Math.floor(1000000 + Math.random() * 9000000).toString();
-  return `${prefix}${suffix}`;
+function getReviewTextForProduct(product) {
+  const selectElem = document.getElementById('questionSetSelect');
+  const selectedMode = selectElem ? selectElem.value : 'NEW_RANDOM';
+  const reviews = product.reviews || {};
+
+  const getRandomNonEmpty = (list) => {
+    const valid = list.filter(item => item && typeof item === 'string' && item.trim().length > 0);
+    if (valid.length > 0) {
+      return valid[Math.floor(Math.random() * valid.length)];
+    }
+    return null;
+  };
+
+  let chosenText = null;
+
+  switch (selectedMode) {
+    case 'NEW_RANDOM':
+      chosenText = getRandomNonEmpty([reviews.new_short2, reviews.new_long2, reviews.new_compare2, reviews.new_mix3]);
+      break;
+    case 'new_short2':
+      chosenText = reviews.new_short2;
+      break;
+    case 'new_long2':
+      chosenText = reviews.new_long2;
+      break;
+    case 'new_compare2':
+      chosenText = reviews.new_compare2;
+      break;
+    case 'new_mix3':
+      chosenText = reviews.new_mix3;
+      break;
+    case 'ALL_RANDOM':
+      chosenText = getRandomNonEmpty([
+        reviews.new_short2, reviews.new_long2, reviews.new_compare2, reviews.new_mix3,
+        reviews.txt2_short, reviews.txt2_long, reviews.txt2_compare,
+        reviews.txt1_short, reviews.txt1_long, reviews.txt1_compare,
+        reviews.md1, reviews.md2
+      ]);
+      break;
+    case 'TXT2_RANDOM':
+      chosenText = getRandomNonEmpty([reviews.txt2_short, reviews.txt2_long, reviews.txt2_compare]);
+      break;
+    case 'txt2_short':
+      chosenText = reviews.txt2_short;
+      break;
+    case 'txt2_long':
+      chosenText = reviews.txt2_long;
+      break;
+    case 'txt2_compare':
+      chosenText = reviews.txt2_compare;
+      break;
+    case 'TXT1_RANDOM':
+      chosenText = getRandomNonEmpty([reviews.txt1_short, reviews.txt1_long, reviews.txt1_compare]);
+      break;
+    case 'txt1_short':
+      chosenText = reviews.txt1_short;
+      break;
+    case 'txt1_long':
+      chosenText = reviews.txt1_long;
+      break;
+    case 'txt1_compare':
+      chosenText = reviews.txt1_compare;
+      break;
+    case 'MD_RANDOM':
+      chosenText = getRandomNonEmpty([reviews.md1, reviews.md2]);
+      break;
+    case 'md1':
+      chosenText = reviews.md1;
+      break;
+    case 'md2':
+      chosenText = reviews.md2;
+      break;
+  }
+
+  // Fallback to template1 / template2 or generic string if specified review set has no text for this product
+  if (!chosenText) {
+    chosenText = reviews.new_short2 || reviews.new_long2 || reviews.new_mix3 || product.template1 || product.template2;
+  }
+  if (!chosenText) {
+    chosenText = 'Sản phẩm dùng rất êm và bền, chất lượng chuẩn Kuchen, giao hàng nhanh chóng.';
+  }
+
+  return chosenText;
 }
 
 const sampleReviewerNames = Array.from({ length: 300 }, () => getRandomVietnameseName());
@@ -384,13 +466,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const pid = product.productId || (product.stt === 4 || product.stt === 100 ? '9778' : product.stt);
       const randomName = getRandomVietnameseName();
       
-      let reviewText = product.template1 || product.template2;
-      if (product.template1 && product.template2) {
-        reviewText = Math.random() > 0.5 ? product.template1 : product.template2;
-      }
-      if (!reviewText) {
-        reviewText = 'Sản phẩm dùng rất êm và bền, chất lượng chuẩn Kuchen, giao hàng nhanh chóng.';
-      }
+      const reviewText = getReviewTextForProduct(product);
 
       const pct = Math.round(((i + 1) / productList.length) * 100);
       autoPilotProgressBarFill.style.width = `${pct}%`;
@@ -460,13 +536,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           const pid = product.productId || (product.stt === 4 || product.stt === 100 ? '9778' : product.stt);
           const randomName = getRandomVietnameseName();
           
-          let reviewText = product.template1 || product.template2;
-          if (product.template1 && product.template2) {
-            reviewText = Math.random() > 0.5 ? product.template1 : product.template2;
-          }
-          if (!reviewText) {
-            reviewText = 'Sản phẩm dùng rất êm và bền, chất lượng chuẩn Kuchen, giao hàng nhanh chóng.';
-          }
+          const reviewText = getReviewTextForProduct(product);
 
           const pct = Math.round(((j + 1) / round1FailedItems.length) * 100);
           autoPilotProgressBarFill.style.width = `${pct}%`;
@@ -949,13 +1019,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const pid = product.productId || (product.stt === 4 || product.stt === 100 ? '9778' : product.stt);
       const randomName = getRandomVietnameseName();
       
-      let reviewText = product.template1 || product.template2;
-      if (product.template1 && product.template2) {
-        reviewText = Math.random() > 0.5 ? product.template1 : product.template2;
-      }
-      if (!reviewText) {
-        reviewText = 'Sản phẩm dùng rất êm và bền, chất lượng chuẩn Kuchen, giao hàng nhanh chóng.';
-      }
+      const reviewText = getReviewTextForProduct(product);
 
       const pct = Math.round(((i + 1) / productList.length) * 100);
       autoPilotProgressBarFill.style.width = `${pct}%`;

@@ -424,14 +424,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function runAutoPilotLoop(productList, scopeName, isManualRetry = false) {
+    if (isAutoPilotRunning) {
+      alert('⚠️ Tiến trình Auto-Pilot đang chạy rồi! Không thể chạy trùng lặp hai luồng cùng lúc.');
+      return;
+    }
+
     if (!productList || productList.length === 0) {
       alert('Không có sản phẩm nào trong danh sách!');
       return;
     }
 
+    // Khóa ngay lập tức trước khi mở Prompt để tuyệt đối không thể bấm lần thứ 2
+    isAutoPilotRunning = true;
+
     if (!isManualRetry) {
       const pass = prompt(`🔐 VUI LÒNG NHẬP MẬT KHẨU ĐỂ KÍCH HOẠT CHẾ ĐỘ AUTO-PILOT (${scopeName}):`);
-      if (pass === null) return;
+      if (pass === null) {
+        isAutoPilotRunning = false;
+        return;
+      }
 
       try {
         const verifyRes = await fetch('/api/verify-password', {
@@ -442,25 +453,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         const verifyJson = await verifyRes.json();
         if (!verifyJson.success) {
           alert('❌ Mật khẩu không chính xác! Không thể kích hoạt chế độ Auto-Pilot.');
+          isAutoPilotRunning = false;
           return;
         }
       } catch (e) {
         alert('❌ Lỗi kết nối tới Server!');
+        isAutoPilotRunning = false;
         return;
       }
 
       const confirmRun = confirm(`🚀 BẠN CÓ CHẮC CHẮN MUỐN BẮT ĐẦU CHẠY TỰ ĐỘNG CHO ${productList.length} SẢN PHẨM (${scopeName})?\n\nHệ thống sẽ tự động gửi đánh giá từng sản phẩm và cập nhật trực tiếp lên Dashboard chung!`);
-      if (!confirmRun) return;
+      if (!confirmRun) {
+        isAutoPilotRunning = false;
+        return;
+      }
     }
 
-    isAutoPilotRunning = true;
     if (btnStartAutoPilotStaff) btnStartAutoPilotStaff.style.display = 'none';
     if (btnStartAutoPilot) btnStartAutoPilot.style.display = 'none';
     if (btnStartAutoPilotAll) btnStartAutoPilotAll.style.display = 'none';
     if (btnRetryFailed) btnRetryFailed.style.display = 'none';
     if (btnRetry429) btnRetry429.style.display = 'none';
-    btnStopAutoPilot.style.display = 'inline-flex';
-    autoPilotProgressSection.style.display = 'block';
+    if (btnStopAutoPilot) btnStopAutoPilot.style.display = 'inline-flex';
+    if (autoPilotProgressSection) autoPilotProgressSection.style.display = 'block';
 
     let round1FailedItems = [];
 
@@ -648,13 +663,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  async function getCompletedReviewsMap() {
+    let cloudCompletions = {};
+    try {
+      const statusRes = await fetch('/api/get-status');
+      if (statusRes.ok) {
+        const statusJson = await statusRes.json();
+        cloudCompletions = statusJson.completedProducts || {};
+      }
+    } catch (e) {}
+    const localCompletions = JSON.parse(localStorage.getItem('kuchen_completed_reviews') || '{}');
+    return { ...cloudCompletions, ...localCompletions };
+  }
+
   if (btnRetry429) {
-    btnRetry429.addEventListener('click', () => {
-      if (!global429FailedProducts || global429FailedProducts.length === 0) {
-        alert('Hiện không có sản phẩm nào bị dính lỗi Rate Limit (Code 429)!');
+    btnRetry429.style.display = 'inline-flex';
+
+    btnRetry429.addEventListener('click', async () => {
+      let itemsToRun = global429FailedProducts;
+
+      if (!itemsToRun || itemsToRun.length === 0) {
+        const completedMap = await getCompletedReviewsMap();
+        if (allProducts && allProducts.length > 0) {
+          itemsToRun = allProducts.filter(p => {
+            const pid = p.productId || p.stt;
+            const rec = completedMap[pid] || completedMap[p.stt];
+            return !rec || rec.statusCode === 429 || (rec.status && String(rec.status).includes('429')) || rec.statusCode !== 302;
+          });
+        }
+      }
+
+      if (!itemsToRun || itemsToRun.length === 0) {
+        const inputStt = prompt('💡 Nhập danh sách STT các sản phẩm bị lỗi 429 cách nhau bởi dấu phẩy (Ví dụ: 2, 3, 5, 6, 8, 9...):');
+        if (!inputStt) return;
+        const sttArray = inputStt.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+        itemsToRun = allProducts.filter(p => sttArray.includes(p.stt));
+      } else {
+        const confirmMsg = `⚡ Tìm thấy ${itemsToRun.length} sản phẩm bị lỗi 429 / chưa hoàn thành thành công (Code 302).\n\nBấm OK để bắt đầu chạy lại ngay cho ${itemsToRun.length} sản phẩm này!\n(Hoặc bấm CANCEL nếu bạn muốn tự nhập danh sách STT cụ thể)`;
+        if (!confirm(confirmMsg)) {
+          const inputStt = prompt('💡 Nhập danh sách STT các sản phẩm bạn muốn chạy lại (Ví dụ: 2, 3, 5, 6, 8...):');
+          if (inputStt) {
+            const sttArray = inputStt.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+            itemsToRun = allProducts.filter(p => sttArray.includes(p.stt));
+          } else {
+            return;
+          }
+        }
+      }
+
+      if (!itemsToRun || itemsToRun.length === 0) {
+        alert('Hiện không tìm thấy sản phẩm hợp lệ nào để chạy lại!');
         return;
       }
-      runAutoPilotLoop(global429FailedProducts, `Chạy lại ${global429FailedProducts.length} SP Lỗi 429`, true);
+
+      runAutoPilotLoop(itemsToRun, `Chạy lại ${itemsToRun.length} SP Lỗi 429/Chưa xong`, true);
     });
   }
 
@@ -682,11 +744,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (btnRetry429) {
-      if (global429FailedProducts && global429FailedProducts.length > 0) {
-        btnRetry429.style.display = 'inline-flex';
-        if (failed429CountBadge) failed429CountBadge.textContent = global429FailedProducts.length;
-      } else {
-        btnRetry429.style.display = 'none';
+      btnRetry429.style.display = 'inline-flex';
+      if (failed429CountBadge) {
+        failed429CountBadge.textContent = (global429FailedProducts && global429FailedProducts.length > 0) ? global429FailedProducts.length : 'Lỗi 429';
       }
     }
   }

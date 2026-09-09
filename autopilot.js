@@ -535,10 +535,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       if (i < productList.length - 1 && isAutoPilotRunning) {
-        const delaySec = isManualRetry ? (Math.floor(Math.random() * 3) + 9) : (Math.floor(Math.random() * 4) + 3);
+        const delaySec = isManualRetry ? (Math.floor(Math.random() * 3) + 19) : (Math.floor(Math.random() * 3) + 9);
         autoPilotCurrentItemText.textContent = isManualRetry 
-          ? `⏳ [Thử lại 429] Chờ ${delaySec}s (Giãn cách 10s xả Rate Limit) trước sản phẩm tiếp theo...` 
-          : `⏳ Chờ ${delaySec}s để chống Spam trước khi sang sản phẩm tiếp theo...`;
+          ? `⏳ [Thử lại 429] Chờ ${delaySec}s (Giãn cách 20s xả Rate Limit) trước sản phẩm tiếp theo...` 
+          : `⏳ [Lượt 1] Chờ ${delaySec}s (Giãn cách 10s chống Spam) trước khi sang sản phẩm tiếp theo...`;
         await new Promise(r => setTimeout(r, delaySec * 1000));
       }
     }
@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       if (isAutoPilotRunning) {
-        log(`[Auto-Pilot] 🔄 BẮT ĐẦU LƯỢT 2: Thử lại ${round1FailedItems.length} sản phẩm lỗi (Giữ nguyên đánh giá Lượt 1 - Giãn cách 10s)...`, 'info');
+        log(`[Auto-Pilot] 🔄 BẮT ĐẦU LƯỢT 2: Thử lại ${round1FailedItems.length} sản phẩm lỗi (Giữ nguyên đánh giá Lượt 1 - Giãn cách 20s)...`, 'info');
         finalFailedItems = [];
 
         for (let j = 0; j < round1FailedItems.length; j++) {
@@ -614,8 +614,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
 
           if (j < round1FailedItems.length - 1 && isAutoPilotRunning) {
-            const delaySec = Math.floor(Math.random() * 3) + 9;
-            autoPilotCurrentItemText.textContent = `⏳ [Lượt 2 Thử lại 429] Chờ ${delaySec}s (Giãn cách 10s xả Rate Limit) trước sản phẩm tiếp theo...`;
+            const delaySec = Math.floor(Math.random() * 3) + 19;
+            autoPilotCurrentItemText.textContent = `⏳ [Lượt 2 Thử lại 429] Chờ ${delaySec}s (Giãn cách 20s xả Rate Limit) trước sản phẩm tiếp theo...`;
             await new Promise(r => setTimeout(r, delaySec * 1000));
           }
         }

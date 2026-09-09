@@ -253,6 +253,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnStopAutoPilot = document.getElementById('btnStopAutoPilot');
   const btnRetryFailed = document.getElementById('btnRetryFailed');
   const failedCountBadge = document.getElementById('failedCountBadge');
+  const btnRetry429 = document.getElementById('btnRetry429');
+  const failed429CountBadge = document.getElementById('failed429CountBadge');
   const quickStaffButtonsContainer = document.getElementById('quickStaffButtonsContainer');
   const autoPilotProgressSection = document.getElementById('autoPilotProgressSection');
   const autoPilotProgressText = document.getElementById('autoPilotProgressText');
@@ -269,6 +271,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let staffList = staffKyThuatDefault;
   let isAutoPilotRunning = false;
   let globalFailedProducts = [];
+  let global429FailedProducts = [];
 
   const btnExportExcelReport = document.getElementById('btnExportExcelReport');
   if (btnExportExcelReport) {
@@ -455,6 +458,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnStartAutoPilot) btnStartAutoPilot.style.display = 'none';
     if (btnStartAutoPilotAll) btnStartAutoPilotAll.style.display = 'none';
     if (btnRetryFailed) btnRetryFailed.style.display = 'none';
+    if (btnRetry429) btnRetry429.style.display = 'none';
     btnStopAutoPilot.style.display = 'inline-flex';
     autoPilotProgressSection.style.display = 'block';
 
@@ -504,7 +508,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         log(`[Auto-Pilot] ✅ [Lượt 1] [${i+1}/${productList.length}] Thành công! (Code 302)`, 'success');
       } else {
-        round1FailedItems.push(product);
+        round1FailedItems.push({ ...product, lastStatus: result.status, lastMessage: result.message });
         log(`[Auto-Pilot] ⚠️ [Lượt 1] [STT ${product.stt}] Gửi thất bại (Mã ${result.status}: ${result.message}). Đã thêm vào mảng thử lại Lượt 2.`, 'warning');
       }
 
@@ -574,7 +578,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             log(`[Auto-Pilot] ✅ [Lượt 2] [STT ${product.stt}] THÀNH CÔNG RỒI! (Code 302)`, 'success');
           } else {
-            finalFailedItems.push(product);
+            finalFailedItems.push({ ...product, lastStatus: result.status, lastMessage: result.message });
             log(`[Auto-Pilot] ❌ [Lượt 2] [STT ${product.stt}] Vẫn thất bại (Mã ${result.status}: ${result.message})`, 'error');
           }
 
@@ -589,6 +593,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     globalFailedProducts = finalFailedItems;
+    global429FailedProducts = finalFailedItems.filter(p => p.lastStatus === 429 || (p.lastMessage && String(p.lastMessage).includes('429')));
 
     if (isAutoPilotRunning) {
       if (globalFailedProducts.length === 0) {
@@ -643,6 +648,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  if (btnRetry429) {
+    btnRetry429.addEventListener('click', () => {
+      if (!global429FailedProducts || global429FailedProducts.length === 0) {
+        alert('Hiện không có sản phẩm nào bị dính lỗi Rate Limit (Code 429)!');
+        return;
+      }
+      runAutoPilotLoop(global429FailedProducts, `Chạy lại ${global429FailedProducts.length} SP Lỗi 429`, true);
+    });
+  }
+
   if (btnStopAutoPilot) {
     btnStopAutoPilot.addEventListener('click', () => {
       log('[Auto-Pilot] ⏹️ Đã dừng tiến trình chạy tự động.', 'warning');
@@ -663,6 +678,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (failedCountBadge) failedCountBadge.textContent = globalFailedProducts.length;
       } else {
         btnRetryFailed.style.display = 'none';
+      }
+    }
+
+    if (btnRetry429) {
+      if (global429FailedProducts && global429FailedProducts.length > 0) {
+        btnRetry429.style.display = 'inline-flex';
+        if (failed429CountBadge) failed429CountBadge.textContent = global429FailedProducts.length;
+      } else {
+        btnRetry429.style.display = 'none';
       }
     }
   }

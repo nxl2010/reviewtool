@@ -478,12 +478,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (autoPilotProgressSection) autoPilotProgressSection.style.display = 'block';
 
     let roundNumber = 1;
+    const maxRounds = 5;
     let currentBatch = [...productList];
     let finalFailedItems = [];
 
-    while (currentBatch.length > 0 && isAutoPilotRunning) {
-      const baseDelay = roundNumber * 10; // Round 1 = 10s, Round 2 = 20s, Round 3 = 30s, etc.
-      log(`[Auto-Pilot] 🚀 BẮT ĐẦU LƯỢT ${roundNumber}: Chạy ${currentBatch.length} sản phẩm (${scopeName} - Giãn cách ~${baseDelay}s/SP)...`, 'info');
+    while (currentBatch.length > 0 && roundNumber <= maxRounds && isAutoPilotRunning) {
+      const baseDelay = roundNumber * 10; // Round 1 = 10s, Round 2 = 20s, Round 3 = 30s, Round 4 = 40s, Round 5 = 50s
+      log(`[Auto-Pilot] 🚀 BẮT ĐẦU LƯỢT ${roundNumber}/${maxRounds}: Chạy ${currentBatch.length} sản phẩm (${scopeName} - Giãn cách ~${baseDelay}s/SP)...`, 'info');
 
       let nextFailedItems = [];
 
@@ -499,10 +500,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pct = Math.round(((i + 1) / currentBatch.length) * 100);
         autoPilotProgressBarFill.style.width = `${pct}%`;
         autoPilotProgressPercent.textContent = `${pct}%`;
-        autoPilotProgressText.textContent = `Lượt ${roundNumber}: Đã xử lý ${i + 1}/${currentBatch.length} sản phẩm (${scopeName})`;
-        autoPilotCurrentItemText.textContent = `⚡ [Lượt ${roundNumber}] [STT ${product.stt}] Đang gửi cho "${product.name}" (${product.assignee})...`;
+        autoPilotProgressText.textContent = `Lượt ${roundNumber}/${maxRounds}: Đã xử lý ${i + 1}/${currentBatch.length} sản phẩm (${scopeName})`;
+        autoPilotCurrentItemText.textContent = `⚡ [Lượt ${roundNumber}/${maxRounds}] [STT ${product.stt}] Đang gửi cho "${product.name}" (${product.assignee})...`;
 
-        log(`[Auto-Pilot] [Lượt ${roundNumber}] [${i+1}/${currentBatch.length}] Đang gửi SP STT ${product.stt} (ID: ${pid}) - "${randomName}"...`, 'info');
+        log(`[Auto-Pilot] [Lượt ${roundNumber}/${maxRounds}] [${i+1}/${currentBatch.length}] Đang gửi SP STT ${product.stt} (ID: ${pid}) - "${randomName}"...`, 'info');
 
         const result = await submitReviewPayloadWithFeedback({
           pid: pid,
@@ -526,7 +527,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             rating: 5,
             statusCode: 302
           });
-          log(`[Auto-Pilot] ✅ [Lượt ${roundNumber}] [STT ${product.stt}] Thành công! (Code 302)`, 'success');
+          log(`[Auto-Pilot] ✅ [Lượt ${roundNumber}/${maxRounds}] [STT ${product.stt}] Thành công! (Code 302)`, 'success');
         } else {
           nextFailedItems.push({ 
             ...product, 
@@ -537,27 +538,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             lastStatus: result.status, 
             lastMessage: result.message 
           });
-          log(`[Auto-Pilot] ⚠️ [Lượt ${roundNumber}] [STT ${product.stt}] Gửi thất bại (Mã ${result.status}: ${result.message}).`, 'warning');
+          log(`[Auto-Pilot] ⚠️ [Lượt ${roundNumber}/${maxRounds}] [STT ${product.stt}] Gửi thất bại (Mã ${result.status}: ${result.message}).`, 'warning');
         }
 
         if (i < currentBatch.length - 1 && isAutoPilotRunning) {
           const delaySec = Math.floor(Math.random() * 3) + (baseDelay - 1);
-          autoPilotCurrentItemText.textContent = `⏳ [Lượt ${roundNumber}] Chờ ${delaySec}s (Giãn cách ~${baseDelay}s xả Rate Limit) trước sản phẩm tiếp theo...`;
+          autoPilotCurrentItemText.textContent = `⏳ [Lượt ${roundNumber}/${maxRounds}] Chờ ${delaySec}s (Giãn cách ~${baseDelay}s xả Rate Limit) trước sản phẩm tiếp theo...`;
           await new Promise(r => setTimeout(r, delaySec * 1000));
         }
       }
 
       finalFailedItems = [...nextFailedItems];
 
-      if (nextFailedItems.length > 0 && isAutoPilotRunning) {
+      if (nextFailedItems.length > 0 && roundNumber < maxRounds && isAutoPilotRunning) {
         roundNumber++;
         const nextBaseDelay = roundNumber * 10;
-        log(`[Auto-Pilot] 📊 Lượt ${roundNumber - 1} hoàn tất! Có ${nextFailedItems.length} sản phẩm thất bại.`, 'warning');
-        log(`[Auto-Pilot] ⏸️ Tạm dừng 30 giây Cooldown Quota trước khi bắt đầu LƯỢT ${roundNumber} (Giãn cách ~${nextBaseDelay}s/SP)...`, 'info');
+        log(`[Auto-Pilot] 📊 Lượt ${roundNumber - 1}/${maxRounds} hoàn tất! Có ${nextFailedItems.length} sản phẩm thất bại.`, 'warning');
+        log(`[Auto-Pilot] ⏸️ Tạm dừng 30 giây Cooldown Quota trước khi bắt đầu LƯỢT ${roundNumber}/${maxRounds} (Giãn cách ~${nextBaseDelay}s/SP)...`, 'info');
 
         for (let sec = 30; sec > 0; sec--) {
           if (!isAutoPilotRunning) break;
-          autoPilotCurrentItemText.textContent = `⏳ [Nghỉ Cooldown Rate Limit] Tự động kích hoạt Lượt ${roundNumber} sau ${sec} giây...`;
+          autoPilotCurrentItemText.textContent = `⏳ [Nghỉ Cooldown Rate Limit] Tự động kích hoạt Lượt ${roundNumber}/${maxRounds} sau ${sec} giây...`;
           await new Promise(r => setTimeout(r, 1000));
         }
 
@@ -575,8 +576,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         log(`[Auto-Pilot] 🎉 ĐÃ HOÀN THÀNH TẤT CẢ SẢN PHẨM KHÔNG CÒN LỖI NÀO (${scopeName})!`, 'success');
         alert(`🎉 ĐÃ HOÀN THÀNH TỰ ĐỘNG TẤT CẢ SẢN PHẨM (${scopeName})!\n\nTiến độ đã được đồng bộ trực tiếp lên Dashboard.`);
       } else {
-        log(`[Auto-Pilot] ⚠️ TIẾN TRÌNH HOÀN TẤT: Hoàn thành đa số, còn ${globalFailedProducts.length} sản phẩm thất bại sau 2 lượt. Bấm nút "🔄 CHẠY LẠI SẢN PHẨM LỖI" để thử lại thủ công.`, 'warning');
-        alert(`⚠️ Hoàn tất tiến trình! Còn ${globalFailedProducts.length} sản phẩm bị lỗi.\n\nBạn có thể nhấn nút "🔄 CHẠY LẠI SẢN PHẨM LỖI" để thử lại thủ công bất kỳ lúc nào.`);
+        log(`[Auto-Pilot] ⚠️ TIẾN TRÌNH HOÀN TẤT (Tối đa ${maxRounds} Lượt): Còn ${globalFailedProducts.length} sản phẩm thất bại. Bấm nút "⚡ THỬ LẠI CHỈ LỖI 429" để thử lại thủ công.`, 'warning');
+        alert(`⚠️ Đã chạy tối đa ${maxRounds} lượt! Còn ${globalFailedProducts.length} sản phẩm bị lỗi.\n\nBạn có thể nhấn nút "⚡ THỬ LẠI CHỈ LỖI 429" để chạy tiếp bất kỳ lúc nào.`);
       }
     }
     

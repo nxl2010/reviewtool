@@ -147,6 +147,9 @@ function getRandomPhone() {
   const getRandomItem = arr => arr[Math.floor(Math.random() * arr.length)];
   const prefix = getRandomItem(phonePrefixes);
   const suffix = Math.floor(1000000 + Math.random() * 9000000).toString();
+  return prefix + suffix;
+}
+
 function getReviewTextForProduct(product) {
   const selectElem = document.getElementById('questionSetSelect');
   const selectedMode = selectElem ? selectElem.value : 'NEW_RANDOM';

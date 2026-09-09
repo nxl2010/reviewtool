@@ -477,148 +477,93 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnStopAutoPilot) btnStopAutoPilot.style.display = 'inline-flex';
     if (autoPilotProgressSection) autoPilotProgressSection.style.display = 'block';
 
-    let round1FailedItems = [];
+    let roundNumber = 1;
+    let currentBatch = [...productList];
+    let finalFailedItems = [];
 
-    log(`[Auto-Pilot] 🚀 Bắt đầu Lượt 1 tiến trình chạy tự động ${productList.length} sản phẩm (${scopeName})...`, 'info');
+    while (currentBatch.length > 0 && isAutoPilotRunning) {
+      const baseDelay = roundNumber * 10; // Round 1 = 10s, Round 2 = 20s, Round 3 = 30s, etc.
+      log(`[Auto-Pilot] 🚀 BẮT ĐẦU LƯỢT ${roundNumber}: Chạy ${currentBatch.length} sản phẩm (${scopeName} - Giãn cách ~${baseDelay}s/SP)...`, 'info');
 
-    for (let i = 0; i < productList.length; i++) {
-      if (!isAutoPilotRunning) break;
+      let nextFailedItems = [];
 
-      const product = productList[i];
-      const pid = product.productId || (product.stt === 4 || product.stt === 100 ? '9778' : product.stt);
-      const randomName = product.author || getRandomVietnameseName();
-      const reviewText = product.comment || getReviewTextForProduct(product);
-      const randomPhone = product.phone || getRandomPhone();
+      for (let i = 0; i < currentBatch.length; i++) {
+        if (!isAutoPilotRunning) break;
 
-      const pct = Math.round(((i + 1) / productList.length) * 100);
-      autoPilotProgressBarFill.style.width = `${pct}%`;
-      autoPilotProgressPercent.textContent = `${pct}%`;
-      autoPilotProgressText.textContent = `Lượt 1: Đã xử lý ${i + 1}/${productList.length} sản phẩm (${scopeName})`;
-      autoPilotCurrentItemText.textContent = `⚡ [STT ${product.stt}] [${product.category || 'Gia dụng'}] Đang gửi cho "${product.name}" (${product.assignee})...`;
+        const product = currentBatch[i];
+        const pid = product.productId || (product.stt === 4 || product.stt === 100 ? '9778' : product.stt);
+        const randomName = product.author || getRandomVietnameseName();
+        const reviewText = product.comment || getReviewTextForProduct(product);
+        const randomPhone = product.phone || getRandomPhone();
 
-      log(`[Auto-Pilot] [Lượt 1] [${i+1}/${productList.length}] Đang gửi SP STT ${product.stt} (ID: ${pid}) - "${randomName}"...`, 'info');
+        const pct = Math.round(((i + 1) / currentBatch.length) * 100);
+        autoPilotProgressBarFill.style.width = `${pct}%`;
+        autoPilotProgressPercent.textContent = `${pct}%`;
+        autoPilotProgressText.textContent = `Lượt ${roundNumber}: Đã xử lý ${i + 1}/${currentBatch.length} sản phẩm (${scopeName})`;
+        autoPilotCurrentItemText.textContent = `⚡ [Lượt ${roundNumber}] [STT ${product.stt}] Đang gửi cho "${product.name}" (${product.assignee})...`;
 
-      const result = await submitReviewPayloadWithFeedback({
-        pid: pid,
-        author: randomName,
-        phone: randomPhone,
-        email: 'kuchenvietnam@gmail.com',
-        comment: reviewText,
-        rating: '5',
-        productUrl: product.url
-      });
+        log(`[Auto-Pilot] [Lượt ${roundNumber}] [${i+1}/${currentBatch.length}] Đang gửi SP STT ${product.stt} (ID: ${pid}) - "${randomName}"...`, 'info');
 
-      if (result.success && (result.status === 302 || result.status === 200)) {
-        recordCompletion(pid, {
-          stt: product.stt,
-          name: product.name,
-          url: product.url,
-          assignee: product.assignee,
+        const result = await submitReviewPayloadWithFeedback({
+          pid: pid,
           author: randomName,
           phone: randomPhone,
+          email: 'kuchenvietnam@gmail.com',
           comment: reviewText,
-          rating: 5,
-          statusCode: 302
-        });
-        log(`[Auto-Pilot] ✅ [Lượt 1] [${i+1}/${productList.length}] Thành công! (Code 302)`, 'success');
-      } else {
-        round1FailedItems.push({ 
-          ...product, 
-          author: randomName, 
-          phone: randomPhone, 
-          comment: reviewText, 
           rating: '5',
-          lastStatus: result.status, 
-          lastMessage: result.message 
+          productUrl: product.url
         });
-        log(`[Auto-Pilot] ⚠️ [Lượt 1] [STT ${product.stt}] Gửi thất bại (Mã ${result.status}: ${result.message}). Đã thêm vào mảng thử lại Lượt 2.`, 'warning');
-      }
 
-      if (i < productList.length - 1 && isAutoPilotRunning) {
-        const delaySec = isManualRetry ? (Math.floor(Math.random() * 3) + 19) : (Math.floor(Math.random() * 3) + 9);
-        autoPilotCurrentItemText.textContent = isManualRetry 
-          ? `⏳ [Thử lại 429] Chờ ${delaySec}s (Giãn cách 20s xả Rate Limit) trước sản phẩm tiếp theo...` 
-          : `⏳ [Lượt 1] Chờ ${delaySec}s (Giãn cách 10s chống Spam) trước khi sang sản phẩm tiếp theo...`;
-        await new Promise(r => setTimeout(r, delaySec * 1000));
-      }
-    }
-
-    // --- LƯỢT 2 (RETRY ROUND FOR FAILED ITEMS) ---
-    let finalFailedItems = [...round1FailedItems];
-
-    if (round1FailedItems.length > 0 && isAutoPilotRunning) {
-      log(`[Auto-Pilot] 📊 Lượt 1 hoàn tất! Thành công ${productList.length - round1FailedItems.length}/${productList.length}. Có ${round1FailedItems.length} sản phẩm thất bại (Mã 429/Timeout).`, 'warning');
-      log(`[Auto-Pilot] ⏸️ Tạm dừng 30 giây để khôi phục Rate Limit Quota trước khi kích hoạt Lượt 2...`, 'info');
-
-      for (let sec = 30; sec > 0; sec--) {
-        if (!isAutoPilotRunning) break;
-        autoPilotCurrentItemText.textContent = `⏳ [Nghỉ Cooldown Rate Limit] Tự động kích hoạt Lượt 2 sau ${sec} giây...`;
-        await new Promise(r => setTimeout(r, 1000));
-      }
-
-      if (isAutoPilotRunning) {
-        log(`[Auto-Pilot] 🔄 BẮT ĐẦU LƯỢT 2: Thử lại ${round1FailedItems.length} sản phẩm lỗi (Giữ nguyên đánh giá Lượt 1 - Giãn cách 20s)...`, 'info');
-        finalFailedItems = [];
-
-        for (let j = 0; j < round1FailedItems.length; j++) {
-          if (!isAutoPilotRunning) break;
-
-          const product = round1FailedItems[j];
-          const pid = product.productId || (product.stt === 4 || product.stt === 100 ? '9778' : product.stt);
-          const randomName = product.author || getRandomVietnameseName();
-          const reviewText = product.comment || getReviewTextForProduct(product);
-          const randomPhone = product.phone || getRandomPhone();
-
-          const pct = Math.round(((j + 1) / round1FailedItems.length) * 100);
-          autoPilotProgressBarFill.style.width = `${pct}%`;
-          autoPilotProgressPercent.textContent = `${pct}%`;
-          autoPilotProgressText.textContent = `Lượt 2 (Thử lại): Đã xử lý ${j + 1}/${round1FailedItems.length} sản phẩm lỗi`;
-          autoPilotCurrentItemText.textContent = `🔄 [Lượt 2] [STT ${product.stt}] Đang thử lại cho "${product.name}"...`;
-
-          log(`[Auto-Pilot] [Lượt 2] [${j+1}/${round1FailedItems.length}] Đang thử lại SP STT ${product.stt} (ID: ${pid}) với tác giả "${randomName}"...`, 'info');
-
-          const result = await submitReviewPayloadWithFeedback({
-            pid: pid,
+        if (result.success && (result.status === 302 || result.status === 200)) {
+          recordCompletion(pid, {
+            stt: product.stt,
+            name: product.name,
+            url: product.url,
+            assignee: product.assignee,
             author: randomName,
             phone: randomPhone,
-            email: 'kuchenvietnam@gmail.com',
             comment: reviewText,
-            rating: '5',
-            productUrl: product.url
+            rating: 5,
+            statusCode: 302
           });
-
-          if (result.success && (result.status === 302 || result.status === 200)) {
-            recordCompletion(pid, {
-              stt: product.stt,
-              name: product.name,
-              url: product.url,
-              assignee: product.assignee,
-              author: randomName,
-              phone: randomPhone,
-              comment: reviewText,
-              rating: 5,
-              statusCode: 302
-            });
-            log(`[Auto-Pilot] ✅ [Lượt 2] [STT ${product.stt}] THÀNH CÔNG RỒI! (Code 302)`, 'success');
-          } else {
-            finalFailedItems.push({ 
-              ...product, 
-              author: randomName, 
-              phone: randomPhone, 
-              comment: reviewText, 
-              rating: '5',
-              lastStatus: result.status, 
-              lastMessage: result.message 
-            });
-            log(`[Auto-Pilot] ❌ [Lượt 2] [STT ${product.stt}] Vẫn thất bại (Mã ${result.status}: ${result.message})`, 'error');
-          }
-
-          if (j < round1FailedItems.length - 1 && isAutoPilotRunning) {
-            const delaySec = Math.floor(Math.random() * 3) + 19;
-            autoPilotCurrentItemText.textContent = `⏳ [Lượt 2 Thử lại 429] Chờ ${delaySec}s (Giãn cách 20s xả Rate Limit) trước sản phẩm tiếp theo...`;
-            await new Promise(r => setTimeout(r, delaySec * 1000));
-          }
+          log(`[Auto-Pilot] ✅ [Lượt ${roundNumber}] [STT ${product.stt}] Thành công! (Code 302)`, 'success');
+        } else {
+          nextFailedItems.push({ 
+            ...product, 
+            author: randomName, 
+            phone: randomPhone, 
+            comment: reviewText, 
+            rating: '5',
+            lastStatus: result.status, 
+            lastMessage: result.message 
+          });
+          log(`[Auto-Pilot] ⚠️ [Lượt ${roundNumber}] [STT ${product.stt}] Gửi thất bại (Mã ${result.status}: ${result.message}).`, 'warning');
         }
+
+        if (i < currentBatch.length - 1 && isAutoPilotRunning) {
+          const delaySec = Math.floor(Math.random() * 3) + (baseDelay - 1);
+          autoPilotCurrentItemText.textContent = `⏳ [Lượt ${roundNumber}] Chờ ${delaySec}s (Giãn cách ~${baseDelay}s xả Rate Limit) trước sản phẩm tiếp theo...`;
+          await new Promise(r => setTimeout(r, delaySec * 1000));
+        }
+      }
+
+      finalFailedItems = [...nextFailedItems];
+
+      if (nextFailedItems.length > 0 && isAutoPilotRunning) {
+        roundNumber++;
+        const nextBaseDelay = roundNumber * 10;
+        log(`[Auto-Pilot] 📊 Lượt ${roundNumber - 1} hoàn tất! Có ${nextFailedItems.length} sản phẩm thất bại.`, 'warning');
+        log(`[Auto-Pilot] ⏸️ Tạm dừng 30 giây Cooldown Quota trước khi bắt đầu LƯỢT ${roundNumber} (Giãn cách ~${nextBaseDelay}s/SP)...`, 'info');
+
+        for (let sec = 30; sec > 0; sec--) {
+          if (!isAutoPilotRunning) break;
+          autoPilotCurrentItemText.textContent = `⏳ [Nghỉ Cooldown Rate Limit] Tự động kích hoạt Lượt ${roundNumber} sau ${sec} giây...`;
+          await new Promise(r => setTimeout(r, 1000));
+        }
+
+        currentBatch = [...nextFailedItems];
+      } else {
+        break;
       }
     }
 

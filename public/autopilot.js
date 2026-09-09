@@ -486,9 +486,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const product = productList[i];
       const pid = product.productId || (product.stt === 4 || product.stt === 100 ? '9778' : product.stt);
-      const randomName = getRandomVietnameseName();
-      
-      const reviewText = getReviewTextForProduct(product);
+      const randomName = product.author || getRandomVietnameseName();
+      const reviewText = product.comment || getReviewTextForProduct(product);
+      const randomPhone = product.phone || getRandomPhone();
 
       const pct = Math.round(((i + 1) / productList.length) * 100);
       autoPilotProgressBarFill.style.width = `${pct}%`;
@@ -498,7 +498,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       log(`[Auto-Pilot] [Lượt 1] [${i+1}/${productList.length}] Đang gửi SP STT ${product.stt} (ID: ${pid}) - "${randomName}"...`, 'info');
 
-      const randomPhone = getRandomPhone();
       const result = await submitReviewPayloadWithFeedback({
         pid: pid,
         author: randomName,
@@ -523,7 +522,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         log(`[Auto-Pilot] ✅ [Lượt 1] [${i+1}/${productList.length}] Thành công! (Code 302)`, 'success');
       } else {
-        round1FailedItems.push({ ...product, lastStatus: result.status, lastMessage: result.message });
+        round1FailedItems.push({ 
+          ...product, 
+          author: randomName, 
+          phone: randomPhone, 
+          comment: reviewText, 
+          rating: '5',
+          lastStatus: result.status, 
+          lastMessage: result.message 
+        });
         log(`[Auto-Pilot] ⚠️ [Lượt 1] [STT ${product.stt}] Gửi thất bại (Mã ${result.status}: ${result.message}). Đã thêm vào mảng thử lại Lượt 2.`, 'warning');
       }
 
@@ -550,7 +557,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       if (isAutoPilotRunning) {
-        log(`[Auto-Pilot] 🔄 BẮT ĐẦU LƯỢT 2: Thử lại ${round1FailedItems.length} sản phẩm lỗi (Giãn cách 10s)...`, 'info');
+        log(`[Auto-Pilot] 🔄 BẮT ĐẦU LƯỢT 2: Thử lại ${round1FailedItems.length} sản phẩm lỗi (Giữ nguyên đánh giá Lượt 1 - Giãn cách 10s)...`, 'info');
         finalFailedItems = [];
 
         for (let j = 0; j < round1FailedItems.length; j++) {
@@ -558,9 +565,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           const product = round1FailedItems[j];
           const pid = product.productId || (product.stt === 4 || product.stt === 100 ? '9778' : product.stt);
-          const randomName = getRandomVietnameseName();
-          
-          const reviewText = getReviewTextForProduct(product);
+          const randomName = product.author || getRandomVietnameseName();
+          const reviewText = product.comment || getReviewTextForProduct(product);
+          const randomPhone = product.phone || getRandomPhone();
 
           const pct = Math.round(((j + 1) / round1FailedItems.length) * 100);
           autoPilotProgressBarFill.style.width = `${pct}%`;
@@ -568,9 +575,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           autoPilotProgressText.textContent = `Lượt 2 (Thử lại): Đã xử lý ${j + 1}/${round1FailedItems.length} sản phẩm lỗi`;
           autoPilotCurrentItemText.textContent = `🔄 [Lượt 2] [STT ${product.stt}] Đang thử lại cho "${product.name}"...`;
 
-          log(`[Auto-Pilot] [Lượt 2] [${j+1}/${round1FailedItems.length}] Đang thử lại SP STT ${product.stt} (ID: ${pid})...`, 'info');
+          log(`[Auto-Pilot] [Lượt 2] [${j+1}/${round1FailedItems.length}] Đang thử lại SP STT ${product.stt} (ID: ${pid}) với tác giả "${randomName}"...`, 'info');
 
-          const randomPhone = getRandomPhone();
           const result = await submitReviewPayloadWithFeedback({
             pid: pid,
             author: randomName,
@@ -595,7 +601,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             log(`[Auto-Pilot] ✅ [Lượt 2] [STT ${product.stt}] THÀNH CÔNG RỒI! (Code 302)`, 'success');
           } else {
-            finalFailedItems.push({ ...product, lastStatus: result.status, lastMessage: result.message });
+            finalFailedItems.push({ 
+              ...product, 
+              author: randomName, 
+              phone: randomPhone, 
+              comment: reviewText, 
+              rating: '5',
+              lastStatus: result.status, 
+              lastMessage: result.message 
+            });
             log(`[Auto-Pilot] ❌ [Lượt 2] [STT ${product.stt}] Vẫn thất bại (Mã ${result.status}: ${result.message})`, 'error');
           }
 

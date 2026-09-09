@@ -528,8 +528,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       if (i < productList.length - 1 && isAutoPilotRunning) {
-        const delaySec = Math.floor(Math.random() * 4) + 3;
-        autoPilotCurrentItemText.textContent = `⏳ Chờ ${delaySec}s để chống Spam trước khi sang sản phẩm tiếp theo...`;
+        const delaySec = isManualRetry ? (Math.floor(Math.random() * 3) + 9) : (Math.floor(Math.random() * 4) + 3);
+        autoPilotCurrentItemText.textContent = isManualRetry 
+          ? `⏳ [Thử lại 429] Chờ ${delaySec}s (Giãn cách 10s xả Rate Limit) trước sản phẩm tiếp theo...` 
+          : `⏳ Chờ ${delaySec}s để chống Spam trước khi sang sản phẩm tiếp theo...`;
         await new Promise(r => setTimeout(r, delaySec * 1000));
       }
     }
@@ -548,7 +550,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       if (isAutoPilotRunning) {
-        log(`[Auto-Pilot] 🔄 BẮT ĐẦU LƯỢT 2: Thử lại ${round1FailedItems.length} sản phẩm lỗi (Tăng giãn cách +2s)...`, 'info');
+        log(`[Auto-Pilot] 🔄 BẮT ĐẦU LƯỢT 2: Thử lại ${round1FailedItems.length} sản phẩm lỗi (Giãn cách 10s)...`, 'info');
         finalFailedItems = [];
 
         for (let j = 0; j < round1FailedItems.length; j++) {
@@ -598,9 +600,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
 
           if (j < round1FailedItems.length - 1 && isAutoPilotRunning) {
-            // Delay for Round 2: +2s extra delay per request
-            const delaySec = Math.floor(Math.random() * 4) + 3 + 2; // 5s to 8s
-            autoPilotCurrentItemText.textContent = `⏳ [Lượt 2] Chờ ${delaySec}s (+2s giãn cách Quota) trước sản phẩm tiếp theo...`;
+            const delaySec = Math.floor(Math.random() * 3) + 9;
+            autoPilotCurrentItemText.textContent = `⏳ [Lượt 2 Thử lại 429] Chờ ${delaySec}s (Giãn cách 10s xả Rate Limit) trước sản phẩm tiếp theo...`;
             await new Promise(r => setTimeout(r, delaySec * 1000));
           }
         }
